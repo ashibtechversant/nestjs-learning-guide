@@ -1,0 +1,2374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastering NestJS: From Express to Enterprise</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Prism CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- External JS Libraries -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+    </script>
+
+    <style>
+        :root {
+            --nestjs-red: #E0234E;
+            --express-gray: #303030;
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #f72585;
+            --sidebar-w: 280px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* Sidebar */
+        #sidebar {
+            width: var(--sidebar-w);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background: #ffffff;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: 0.3s;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .brand-section {
+            padding: 25px;
+            background: linear-gradient(135deg, var(--nestjs-red), var(--secondary));
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .nav-group-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #adb5bd;
+            padding: 15px 25px 5px;
+            letter-spacing: 1px;
+        }
+
+        .nav-link {
+            color: #495057;
+            padding: 10px 25px;
+            border-left: 4px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--nestjs-red);
+            background: #fff5f7;
+            border-left-color: var(--nestjs-red);
+        }
+
+        /* Main Content */
+        main {
+            margin-left: var(--sidebar-w);
+            padding: 40px;
+            transition: 0.3s;
+        }
+
+        /* Topic Cards */
+        .topic-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            overflow: hidden;
+            border-top: 5px solid var(--nestjs-red);
+        }
+
+        .topic-header {
+            padding: 20px 30px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topic-header:hover {
+            background-color: #fdfdfd;
+        }
+
+        .content-body {
+            padding: 30px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Elements */
+        .concept-box {
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+
+        .cb-red {
+            background: #fff0f3;
+            border-color: var(--nestjs-red);
+        }
+
+        .cb-blue {
+            background: #e3f2fd;
+            border-color: var(--primary);
+        }
+
+        .cb-gray {
+            background: #f8f9fa;
+            border-color: var(--express-gray);
+        }
+
+        .diagram-container {
+            background: #fafafa;
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            overflow-x: auto;
+        }
+
+        /* Migration Badge */
+        .migration-badge {
+            background: linear-gradient(90deg, var(--express-gray) 0%, var(--nestjs-red) 100%);
+            color: white;
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-left: 10px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile */
+        .toggle-btn {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1100;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+        }
+
+        @media (max-width: 991px) {
+            #sidebar {
+                transform: translateX(-100%);
+            }
+
+            #sidebar.active {
+                transform: translateX(0);
+            }
+
+            main {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .toggle-btn {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="btn btn-danger toggle-btn shadow-lg" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="brand-section">
+            <h4 class="mb-0 fw-bold"><i class="fas fa-shield-cat me-2"></i>NestJS Master</h4>
+            <small style="opacity: 0.9;">Express to Enterprise</small>
+        </div>
+
+        <div class="nav flex-column">
+            <div class="nav-group-label">Phase 1: Foundations</div>
+            <a href="#intro" class="nav-link">1. Why NestJS?</a>
+            <a href="#architecture" class="nav-link">2. Core Architecture</a>
+            <a href="#cli" class="nav-link">3. CLI & Setup</a>
+
+            <div class="nav-group-label">Phase 2: Building Blocks</div>
+            <a href="#controllers" class="nav-link">4. Controllers & Routing</a>
+            <a href="#providers" class="nav-link">5. Providers & Services</a>
+            <a href="#modules" class="nav-link">6. Modules & DI</a>
+
+            <div class="nav-group-label">Phase 3: Migration Guide</div>
+            <a href="#middleware" class="nav-link">7. Middleware (Express vs Nest)</a>
+            <a href="#pipes" class="nav-link">8. Validation & Pipes</a>
+            <a href="#guards" class="nav-link">9. Guards & Auth</a>
+            <a href="#interceptors" class="nav-link">10. Interceptors</a>
+
+            <div class="nav-group-label">Phase 4: Advanced</div>
+            <a href="#database" class="nav-link">11. Database (TypeORM/Prisma)</a>
+            <a href="#config" class="nav-link">12. Configuration</a>
+            <a href="#testing" class="nav-link">13. Testing</a>
+            <a href="#microservices" class="nav-link">14. Microservices</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+
+        <!-- Introduction -->
+        <div class="alert alert-light border-start border-4 border-danger mb-5 shadow-sm">
+            <div class="row align-items-center">
+            <div class="col-md-9">
+                <h1 class="display-6 fw-bold text-dark">Learning Path: NestJS for Express Developers</h1>
+                <p class="lead text-muted">A structured guide to transitioning from the freedom of Express.js to the
+                opinionated, scalable architecture of NestJS.</p>
+                <hr class="my-3">
+                <div class="row g-3 small text-muted">
+                <div class="col-md-6">
+                    <i class="fas fa-calendar-alt text-danger me-2"></i>
+                    <strong>Last Updated:</strong> <span id="lastUpdated">Loading...</span>
+                </div>
+                <div class="col-md-6">
+                    <i class="fas fa-building text-danger me-2"></i>
+                    <strong>Organization:</strong> Techversant Infotech
+                </div>
+                </div>
+            </div>
+            <div class="col-md-3 text-center">
+                <img src="https://techversantinfotech.com/wp-content/uploads/2025/09/Techv-logo-011-scaled.png" 
+                 alt="Techversant Infotech Logo" 
+                 class="img-fluid rounded shadow-sm" 
+                 style="max-width: 150px;">
+            </div>
+            </div>
+        </div>
+
+        <script>
+            // Set last updated date
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+            });
+        </script>
+
+        <!-- 1. Why NestJS? -->
+        <section id="intro" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold"><i class="fas fa-rocket me-2 text-danger"></i>1. Why NestJS? (The Paradigm
+                    Shift)</h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Intro Concept -->
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-7">
+                        <p class="lead text-dark">Node.js is powerful, but <strong>Express.js</strong> leaves
+                            architectural decisions entirely up to you. This freedom often leads to "Spaghetti Code" in
+                            large enterprise applications.</p>
+                        <p class="text-muted"><strong>NestJS</strong> solves this. It provides an out-of-the-box
+                            architecture inspired by Angular. It forces you to write code that is modular, testable, and
+                            scalable.</p>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="concept-box cb-red">
+                            <h6 class="fw-bold text-danger">The Core Philosophy</h6>
+                            <ul class="small mb-0 ps-3">
+                                <li><strong>Opinionated:</strong> Provides a "right way" to do things.</li>
+                                <li><strong>TypeScript First:</strong> Built with and for TS (though JS is supported).
+                                </li>
+                                <li><strong>OOP + FP + FRP:</strong> Combines Object Oriented, Functional, and Reactive
+                                    programming.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Comparison: Express vs Nest Architecture -->
+                <h6 class="fw-bold text-secondary mt-4">1.1 Visualizing the Architecture Shift</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 bg-light">
+                            <div class="card-header bg-dark text-white text-center">
+                                <i class="fab fa-node-js me-2"></i>Express.js (The "Wild West")
+                            </div>
+                            <div class="card-body">
+                                <div class="diagram-container m-0 p-2">
+                                    <div class="mermaid">
+                                        graph TD
+                                        Req[Request] --> MW[Middleware]
+                                        MW --> Route[Route Handler]
+                                        Route --> DB[(Database)]
+                                        Route --> Util[Helper Functions]
+                                        style Route fill:#fff,stroke:#333
+                                        style DB fill:#eee,stroke:#333
+                                    </div>
+                                </div>
+                                <p class="small text-center mt-2">Linear, often unstructured. No strict rules on folder
+                                    structure or dependency management.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 bg-light">
+                            <div class="card-header text-white text-center"
+                                style="background-color: var(--nestjs-red);">
+                                <i class="fas fa-shield-cat me-2"></i>NestJS (The "Structured City")
+                            </div>
+                            <div class="card-body">
+                                <div class="diagram-container m-0 p-2">
+                                    <div class="mermaid">
+                                        graph TD
+                                        Root[App Module] --> UserMod[User Module]
+                                        Root --> OrderMod[Order Module]
+
+                                        subgraph User Module
+                                        C1[Controller] <--> S1[Service]
+                                            end
+
+                                            subgraph Order Module
+                                            C2[Controller] <--> S2[Service]
+                                                end
+
+                                                style Root fill:#E0234E,color:white,stroke:#333
+                                                style UserMod fill:#ffcdd2,stroke:#E0234E
+                                                style OrderMod fill:#ffcdd2,stroke:#E0234E
+                                    </div>
+                                </div>
+                                <p class="small text-center mt-2">Modular, hierarchical. Logic is separated into
+                                    Modules, Controllers, and Providers.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Scalability Chart -->
+                <div class="row align-items-center">
+                    <div class="col-md-7">
+                        <h6 class="fw-bold text-secondary">1.2 Scalability vs. Development Time</h6>
+                        <p class="small text-muted">
+                            Express is faster to start (Boilerplate is minimal). However, as the project grows, the lack
+                            of structure increases technical debt ("Maintenance Nightmare").
+                            <br><br>
+                            NestJS has a steeper learning curve initially, but maintainability remains constant as the
+                            app scales.
+                        </p>
+                    </div>
+                    <div class="col-md-5">
+                        <div style="height: 250px;">
+                            <canvas id="frameworkChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparison Table -->
+                <h6 class="fw-bold text-secondary mt-4">1.3 Direct Comparison</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered small align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Feature</th>
+                                <th>Express.js</th>
+                                <th>NestJS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold">Architecture</td>
+                                <td>Unopinionated (DIY)</td>
+                                <td>Modular (Angular-inspired)</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Language</td>
+                                <td>JavaScript (CommonJS)</td>
+                                <td>TypeScript (First-class citizen)</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Dependency Injection</td>
+                                <td>No (Manual require/import)</td>
+                                <td>Yes (Built-in IoC Container)</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Use Case</td>
+                                <td>Micro-services, Simple APIs</td>
+                                <td>Enterprise Monoliths, Complex APIs</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Chart Script for this section -->
+                <script>
+                    (function () {
+                        const ctx = document.getElementById('frameworkChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: ['Start', 'Small App', 'Medium App', 'Enterprise App', 'Mega Monolith'],
+                                datasets: [{
+                                    label: 'Maintainability (NestJS)',
+                                    data: [90, 92, 90, 88, 85],
+                                    borderColor: '#E0234E',
+                                    tension: 0.3,
+                                    borderWidth: 3
+                                }, {
+                                    label: 'Maintainability (Express)',
+                                    data: [100, 95, 75, 50, 30],
+                                    borderColor: '#303030',
+                                    tension: 0.3,
+                                    borderWidth: 3,
+                                    borderDash: [5, 5]
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: { y: { beginAtZero: true, title: { display: true, text: 'Ease of Maintenance' } } },
+                                plugins: { legend: { position: 'bottom' } }
+                            }
+                        });
+                    })();
+                </script>
+
+            </div>
+        </section>
+
+        <!-- 2. Core Architecture -->
+        <section id="architecture" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold"><i class="fas fa-cubes me-2 text-primary"></i>2. Core Architecture: The Module
+                    System</h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Introduction -->
+                <p class="lead text-dark">
+                    In NestJS, everything is a <strong>Module</strong>. Unlike Express, where you might organize code by
+                    folders (routes, models, controllers), NestJS organizes code by <strong>Domain</strong> (Features).
+                </p>
+
+                <!-- The Triad Visualization -->
+                <h6 class="fw-bold text-secondary mt-4">2.1 The Building Blocks (The Triad)</h6>
+                <div class="row g-3 mb-4">
+
+                    <!-- Modules -->
+                    <div class="col-md-4">
+                        <div class="concept-box cb-red h-100">
+                            <h6 class="fw-bold text-danger"><i class="fas fa-box me-2"></i>1. Modules</h6>
+                            <p class="small text-muted">The organizational unit. Every application has at least one
+                                <strong>Root Module</strong>. It groups related controllers and providers together.</p>
+                            <span class="badge bg-danger">@Module()</span>
+                        </div>
+                    </div>
+
+                    <!-- Controllers -->
+                    <div class="col-md-4">
+                        <div class="concept-box cb-blue h-100">
+                            <h6 class="fw-bold text-primary"><i class="fas fa-traffic-light me-2"></i>2. Controllers
+                            </h6>
+                            <p class="small text-muted">Responsible for handling incoming <strong>HTTP requests</strong>
+                                and returning responses to the client. They bind routes to logic.</p>
+                            <span class="badge bg-primary">@Controller()</span>
+                        </div>
+                    </div>
+
+                    <!-- Providers -->
+                    <div class="col-md-4">
+                        <div class="concept-box cb-gray h-100">
+                            <h6 class="fw-bold text-dark"><i class="fas fa-concierge-bell me-2"></i>3. Providers</h6>
+                            <p class="small text-muted">Also known as Services. They contain the <strong>Business
+                                    Logic</strong>. They are injected into controllers via Dependency Injection.</p>
+                            <span class="badge bg-dark">@Injectable()</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Logic Diagram -->
+                <h6 class="fw-bold text-secondary">2.2 The Application Graph</h6>
+                <p class="small text-muted">NestJS constructs an "Application Graph" at startup. This determines how
+                    modules connect and how dependencies are instantiated.</p>
+
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph TD
+                        Client((Client)) -- HTTP Request --> Root[App Module]
+
+                        subgraph App Module
+                        AC[AppController]
+                        AS[AppService]
+                        AC --> AS
+                        end
+
+                        subgraph Users Feature
+                        Root --> UM[UsersModule]
+                        UC[UsersController]
+                        US[UsersService]
+                        UM --> UC
+                        UC --> US
+                        US --> DB[(Database)]
+                        end
+
+                        subgraph Auth Feature
+                        Root --> AM[AuthModule]
+                        AC_Auth[AuthController]
+                        AS_Auth[AuthService]
+                        AM --> AC_Auth
+                        AC_Auth --> AS_Auth
+                        end
+
+                        style Root fill:#E0234E,color:white,stroke:#333
+                        style UM fill:#ffebee,stroke:#E0234E
+                        style AM fill:#e3f2fd,stroke:#2196f3
+                        style US fill:#fff,stroke:#333
+                        style AS fill:#fff,stroke:#333
+                        style DB fill:#333,color:white
+                    </div>
+                </div>
+
+                <!-- Code Example vs Express -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h6 class="fw-bold text-secondary">2.3 How it looks in Code</h6>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light border rounded">
+                            <h6 class="small text-muted fw-bold text-uppercase">NestJS (Declarative)</h6>
+                            <pre class="m-0" style="font-size: 0.75rem;"><code class="language-typescript">
+// app.module.ts
+@Module({
+  imports: [UsersModule, AuthModule],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+                            </code></pre>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light border rounded">
+                            <h6 class="small text-muted fw-bold text-uppercase">Express (Imperative)</h6>
+                            <pre class="m-0" style="font-size: 0.75rem;"><code class="language-javascript">
+// app.js
+const express = require('express');
+const app = express();
+
+const userRoutes = require('./routes/users');
+const authRoutes = require('./routes/auth');
+
+// Manually wiring routes
+app.use('/users', userRoutes);
+app.use('/auth', authRoutes);
+                            </code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Takeaway -->
+                <div class="alert alert-info mt-4 d-flex align-items-center">
+                    <i class="fas fa-lightbulb fa-2x me-3"></i>
+                    <div>
+                        <strong>Inversion of Control (IoC):</strong> In Express, <em>you</em> create instances of your
+                        services and pass them around. In NestJS, the <em>IoC Container</em> creates and manages
+                        instances for you (Singleton pattern by default).
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 3. CLI -->
+        <section id="cli" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold"><i class="fas fa-terminal me-2 text-dark"></i>3. CLI & Project Scaffolding</h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Intro -->
+                <p class="text-muted mb-4">
+                    In Express, you start with a blank file and build your own structure. In NestJS, the <strong>CLI
+                        (Command Line Interface)</strong> is your best friend. It not only creates the project but
+                    generates code, updates modules, and ensures architectural consistency.
+                </p>
+
+                <!-- Terminal Simulation -->
+                <div class="row mb-4">
+                    <div class="col-md-8 mx-auto">
+                        <div class="card bg-dark text-white border-0 shadow">
+                            <div class="card-header border-secondary p-2 small">
+                                <span class="text-danger me-2">●</span>
+                                <span class="text-warning me-2">●</span>
+                                <span class="text-success">●</span>
+                                <span class="ms-2 text-muted">bash</span>
+                            </div>
+                            <div class="card-body font-monospace p-3">
+                                <p class="mb-2"><span class="text-success">$</span> npm i -g @nestjs/cli <span
+                                        class="text-secondary">// Install Global CLI</span></p>
+                                <p class="mb-2"><span class="text-success">$</span> nest new project-name <span
+                                        class="text-secondary">// Scaffolds entire app</span></p>
+                                <p class="mb-0"><span class="text-success">$</span> npm run start:dev <span
+                                        class="text-secondary">// Hot-reload server</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Directory Structure Comparison -->
+                <h6 class="fw-bold text-secondary mt-4">3.1 Structure Comparison: Express vs. Nest</h6>
+                <p class="small text-muted">See how NestJS enforces a specific structure compared to the flexibility of
+                    Express.</p>
+
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph TD
+                        subgraph Express["Express (Common Convention)"]
+                        ERoot[root]
+                        EApp[app.js]
+                        ERoutes[routes/]
+                        EControllers[controllers/]
+                        EModels[models/]
+                        ERoot --> EApp
+                        ERoot --> ERoutes
+                        ERoot --> EControllers
+                        ERoot --> EModels
+                        end
+
+                        subgraph Nest["NestJS (Standard)"]
+                        NRoot[root]
+                        NMain[main.ts]
+                        NAppMod[app.module.ts]
+                        NAppCon[app.controller.ts]
+                        NAppSrv[app.service.ts]
+                        NUsers[users/]
+
+                        NRoot --> src
+                        src --> NMain
+                        src --> NAppMod
+                        src --> NAppCon
+                        src --> NAppSrv
+                        src --> NUsers
+                        end
+
+                        style Express fill:#f8f9fa,stroke:#333
+                        style Nest fill:#fff0f3,stroke:#E0234E
+                        style NMain fill:#E0234E,color:white
+                        style NAppMod fill:#E0234E,color:white
+                    </div>
+                </div>
+
+                <!-- The Generator Table -->
+                <h6 class="fw-bold text-secondary mt-4">3.2 The Generator (Productivity Booster)</h6>
+                <p class="small text-muted">
+                    Stop creating files manually! The CLI creates the file, the spec (test) file, and
+                    <strong>automatically imports it into the Module</strong>.
+                </p>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Goal</th>
+                                <th>Express Workflow</th>
+                                <th>Nest CLI Command</th>
+                                <th>Outcome</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold">New Feature</td>
+                                <td>Create folder, create files manually</td>
+                                <td><code class="text-danger">nest g res users</code></td>
+                                <td>Creates Module, Controller, Service, DTOs & Entities (CRUD ready)</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">New Route</td>
+                                <td>Create file in <code>routes/</code>, require in <code>app.js</code></td>
+                                <td><code class="text-primary">nest g co orders</code></td>
+                                <td>Creates Controller & updates Module imports</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Business Logic</td>
+                                <td>Create file in <code>services/</code></td>
+                                <td><code class="text-warning">nest g s orders</code></td>
+                                <td>Creates Service & updates Module providers</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Key Concept Box -->
+                <div class="concept-box cb-blue mt-3">
+                    <h6 class="fw-bold text-primary mb-1">main.ts - The Entry Point</h6>
+                    <p class="small text-muted mb-0">
+                        Unlike Express where <code>app.js</code> usually contains middleware, routes, and server
+                        startup, NestJS uses <code>main.ts</code> purely to bootstrap the application factory. Logic is
+                        delegated to Modules.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 4. Controllers -->
+        <section id="controllers" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-route me-2 text-success"></i>4. Controllers & Routing
+                    <span class="migration-badge">Express: app.get()</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Explanation -->
+                <p class="text-muted">
+                    Controllers are responsible for handling incoming <strong>requests</strong> and returning
+                    <strong>responses</strong> to the client. In Express, you define routes manually. In NestJS, you use
+                    <strong>Classes</strong> and <strong>Decorators</strong>.
+                </p>
+
+                <!-- Comparison Code Block -->
+                <div class="row g-3 mb-4">
+                    <!-- Express Side -->
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light border rounded h-100">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fab fa-node-js fa-lg me-2"></i>
+                                <h6 class="fw-bold m-0">Express.js</h6>
+                            </div>
+                            <pre class="m-0" style="font-size: 0.75rem;"><code class="language-javascript">
+// user.routes.js
+router.get('/users', (req, res) => {
+  res.json({ message: 'Get all users' });
+});
+
+router.post('/users', (req, res) => {
+  // Access body via req.body
+  const user = req.body;
+  res.status(201).json(user);
+});
+                            </code></pre>
+                        </div>
+                    </div>
+
+                    <!-- NestJS Side -->
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded h-100"
+                            style="background-color: #f0fff4; border-color: #c3e6cb !important;">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-shield-cat fa-lg text-success me-2"></i>
+                                <h6 class="fw-bold m-0 text-success">NestJS</h6>
+                            </div>
+                            <pre class="m-0" style="font-size: 0.75rem;"><code class="language-typescript">
+// user.controller.ts
+@Controller('users')
+export class UserController {
+
+  @Get()
+  findAll() {
+    return { message: 'Get all users' };
+  }
+
+  @Post()
+  @HttpCode(201)
+  create(@Body() user: CreateUserDto) {
+    return user;
+  }
+}
+                            </code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Decorator Mapping Table -->
+                <h6 class="fw-bold text-secondary mt-2">4.1 Decorator Cheat Sheet</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-sm table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Express Concept</th>
+                                <th>NestJS Decorator</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>req.body</code></td>
+                                <td><code class="text-danger">@Body()</code></td>
+                                <td>Extracts the body of the request.</td>
+                            </tr>
+                            <tr>
+                                <td><code>req.params</code></td>
+                                <td><code class="text-primary">@Param()</code></td>
+                                <td>Extracts route parameters (e.g., <code>/users/:id</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>req.query</code></td>
+                                <td><code class="text-info">@Query()</code></td>
+                                <td>Extracts query strings (e.g., <code>?limit=10</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>res.status()</code></td>
+                                <td><code class="text-warning">@HttpCode()</code></td>
+                                <td>Sets the HTTP status code explicitly.</td>
+                            </tr>
+                            <tr>
+                                <td><code>req, res</code></td>
+                                <td><code>@Req(), @Res()</code></td>
+                                <td>Access underlying platform objects (Avoid if possible!).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Request Lifecycle Diagram -->
+                <h6 class="fw-bold text-secondary">4.2 The Lifecycle of a Request</h6>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        sequenceDiagram
+                        participant C as Client
+                        participant Con as Controller (@Controller)
+                        participant H as Handler (@Get/Post)
+                        participant S as Service
+
+                        C->>Con: HTTP GET /users
+                        Con->>H: Match Route Route
+                        H->>S: Call Business Logic
+                        S-->>H: Return Data
+                        H-->>C: Auto-Serialize JSON Response
+                    </div>
+                </div>
+
+                <!-- DTO Concept -->
+                <div class="concept-box cb-blue mt-4">
+                    <h6 class="fw-bold text-primary mb-2">DTO (Data Transfer Object)</h6>
+                    <p class="small text-muted mb-0">
+                        In Express, you often guess what is in `req.body`. In NestJS, we use <strong>DTOs</strong>
+                        (Classes) to define the shape of data sent over the network. This enables automatic validation
+                        and IntelliSense.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 5. Providers -->
+        <section id="providers" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-cogs me-2 text-warning"></i>5. Providers & Services
+                    <span class="migration-badge">Express: Service Layer</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Introduction -->
+                <p class="lead text-dark">
+                    A <strong>Provider</strong> is simply a class annotated with the <code>@Injectable()</code>
+                    decorator. In Express, you might create a "service" file and manually <code>require()</code> it in
+                    your controller. In NestJS, the framework <strong>injects</strong> these services for you.
+                </p>
+
+                <!-- Concept Visualization -->
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-6">
+                        <div class="concept-box cb-gray h-100">
+                            <h6 class="fw-bold text-dark">Separation of Concerns</h6>
+                            <ul class="small mb-0 ps-3">
+                                <li><strong>Controllers:</strong> Handle HTTP requests and responses. They should be
+                                    "thin".</li>
+                                <li><strong>Services (Providers):</strong> Handle complex business logic and database
+                                    access. They should be "fat".</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="diagram-container m-0 p-2">
+                            <div class="mermaid">
+                                graph LR
+                                C[Controller] -.->|Injects| S[Service]
+                                S -.->|Injects| R[Repository]
+                                R --> DB[(Database)]
+                                style S fill:#fff3e0,stroke:#ff9800
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Comparison -->
+                <h6 class="fw-bold text-secondary">5.1 The "Express Way" vs. The "Nest Way"</h6>
+                <div class="row g-0 border rounded overflow-hidden mb-4">
+                    <!-- Express -->
+                    <div class="col-md-6 border-end bg-light p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong class="text-muted small">Express (Manual Import)</strong>
+                            <i class="fab fa-node-js text-muted"></i>
+                        </div>
+                        <pre class="m-0 border-0" style="font-size: 0.75rem;"><code class="language-javascript">
+// userService.js
+class UserService {
+  findAll() { return db.users.find(); }
+}
+module.exports = new UserService();
+
+// userController.js
+// Tightly Coupled!
+const userService = require('./userService');
+
+const getUsers = (req, res) => {
+   const users = userService.findAll();
+   res.json(users);
+}
+                        </code></pre>
+                    </div>
+
+                    <!-- NestJS -->
+                    <div class="col-md-6 bg-white p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong class="text-warning small">NestJS (Dependency Injection)</strong>
+                            <i class="fas fa-shield-alt text-warning"></i>
+                        </div>
+                        <pre class="m-0 border-0" style="font-size: 0.75rem;"><code class="language-typescript">
+// user.service.ts
+@Injectable()
+export class UserService {
+  findAll() { return db.users.find(); }
+}
+
+// user.controller.ts
+@Controller('users')
+export class UserController {
+  // Loosely Coupled! Nest handles the "new"
+  constructor(private userService: UserService) {}
+
+  @Get()
+  getUsers() {
+     return this.userService.findAll();
+  }
+}
+                        </code></pre>
+                    </div>
+                </div>
+
+                <!-- How DI Works Diagram -->
+                <h6 class="fw-bold text-secondary mt-4">5.2 How Dependency Injection (DI) Works</h6>
+                <p class="small text-muted">NestJS uses a built-in IoC (Inversion of Control) container to manage
+                    dependencies.</p>
+
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        sequenceDiagram
+                        participant App as Nest Application
+                        participant Cont as IoC Container
+                        participant Srv as UserService
+                        participant Ctrl as UserController
+
+                        App->>Cont: Bootstrap Application
+                        Cont->>Srv: Instantiate UserService
+                        Note right of Srv: Singleton created (Cached)
+                        Cont->>Ctrl: Instantiate UserController
+                        Ctrl->>Cont: "I need UserService!"
+                        Cont-->>Ctrl: Injects cached UserService instance
+                    </div>
+                </div>
+
+                <!-- Key Benefits -->
+                <div class="row g-2 mt-2">
+                    <div class="col-md-4">
+                        <div class="p-2 border rounded bg-light text-center small">
+                            <i class="fas fa-vial text-success mb-1"></i><br><strong>Testability</strong><br>Easily mock
+                            services during testing.
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2 border rounded bg-light text-center small">
+                            <i class="fas fa-recycle text-info mb-1"></i><br><strong>Reusability</strong><br>Share logic
+                            across modules effortlessly.
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2 border rounded bg-light text-center small">
+                            <i class="fas fa-memory text-danger mb-1"></i><br><strong>Efficiency</strong><br>Singletons
+                            save memory usage.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 6. Modules -->
+        <section id="modules" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold"><i class="fas fa-box-open me-2 text-info"></i>6. Modules & Organization</h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Introduction -->
+                <p class="lead text-dark">
+                    A <strong>Module</strong> is a class annotated with the <code>@Module()</code> decorator. It
+                    provides metadata that Nest uses to organize the application structure.
+                </p>
+                <div class="alert alert-light border-start border-4 border-info">
+                    <strong>Express Mindset:</strong> "I organize code by file paths and folders."<br>
+                    <strong>NestJS Mindset:</strong> "I organize code by logical <em>features</em> (Modules). The file
+                    path doesn't determine visibility; the Module does."
+                </div>
+
+                <!-- The Application Graph Diagram -->
+                <h6 class="fw-bold text-secondary mt-4">6.1 The Application Tree</h6>
+                <p class="small text-muted">NestJS builds a graph starting from the <strong>Root Module</strong>.</p>
+
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph TD
+                        Root[App Module]
+
+                        subgraph Core [Core Features]
+                        DB[Database Module]
+                        Config[Config Module]
+                        end
+
+                        subgraph Features [Business Logic]
+                        User[Users Module]
+                        Order[Orders Module]
+                        Chat[Chat Module]
+                        end
+
+                        subgraph Shared [Shared Utilities]
+                        Auth[Auth Module]
+                        end
+
+                        Root --> DB
+                        Root --> Config
+                        Root --> User
+                        Root --> Order
+                        Root --> Chat
+
+                        User -.->|Imports| Auth
+                        Order -.->|Imports| Auth
+
+                        style Root fill:#E0234E,color:white,stroke:#333
+                        style Auth fill:#fff176,stroke:#fbc02d
+                        style User fill:#e1f5fe,stroke:#0288d1
+                        style Order fill:#e1f5fe,stroke:#0288d1
+                    </div>
+                </div>
+
+                <!-- The @Module Metadata -->
+                <h6 class="fw-bold text-secondary mt-4">6.2 Anatomy of a Module</h6>
+                <p class="small">The decorator takes an object with four specific properties:</p>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-primary shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-primary fw-bold">1. controllers</h6>
+                                <p class="small mb-0">The set of controllers defined in this module which have to be
+                                    instantiated.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-warning shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-warning fw-bold">2. providers</h6>
+                                <p class="small mb-0">The services, repositories, or factories that will be instantiated
+                                    by the Nest injector and may be shared at least within this module.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-success shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-success fw-bold">3. imports</h6>
+                                <p class="small mb-0">The list of <em>other</em> modules that export the providers which
+                                    are required in this module.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-danger shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-danger fw-bold">4. exports</h6>
+                                <p class="small mb-0">The subset of providers that are provided by this module and
+                                    should be available in other modules which import this module.
+                                    <strong>(Encapsulation)</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Example: Shared Modules -->
+                <h6 class="fw-bold text-secondary mt-4">6.3 Shared Modules (The "Gotcha" for Express Devs)</h6>
+                <p class="small text-muted">
+                    In Express, if you `require()` a file, you get it. In NestJS, Providers are <strong>private</strong>
+                    to the module unless they are exported.
+                </p>
+
+                <div class="row g-0 border rounded overflow-hidden">
+                    <div class="col-md-12 bg-white p-3">
+                        <pre class="m-0 border-0" style="font-size: 0.8rem;"><code class="language-typescript">
+// auth.module.ts
+@Module({
+  providers: [AuthService],
+  exports: [AuthService] // <--- CRITICAL: Making it public
+})
+export class AuthModule {}
+
+
+// users.module.ts
+@Module({
+  imports: [AuthModule], // <--- Importing the Module, NOT the service file
+  controllers: [UserController],
+  providers: [UserService]
+  // UserService can now inject AuthService!
+})
+export class UsersModule {}
+                        </code></pre>
+                    </div>
+                </div>
+
+                <!-- Global Modules -->
+                <div class="concept-box cb-blue mt-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-globe fa-2x text-primary me-3"></i>
+                        <div>
+                            <h6 class="fw-bold text-dark m-0">@Global() Modules</h6>
+                            <p class="small text-muted m-0">
+                                Usually, you must import a module to use it. However, for things like Database
+                                connections or Loggers, you can use the <code>@Global()</code> decorator. You import it
+                                once in the Root module, and it's available everywhere. Use sparingly!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 7. Middleware -->
+        <section id="middleware" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-filter me-2 text-secondary"></i>7. Middleware
+                    <span class="migration-badge">Express: app.use()</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Intro -->
+                <p class="text-muted mb-4">
+                    Middleware is a function which is called <strong>before</strong> the route handler. Middleware
+                    functions have access to the request and response objects, and the <code>next()</code> middleware
+                    function in the application’s request-response cycle.
+                </p>
+
+                <!-- Comparison -->
+                <div class="row g-4 align-items-center mb-4">
+                    <!-- Express -->
+                    <div class="col-md-5">
+                        <div class="card h-100 border-0">
+                            <div class="card-header bg-dark text-white small">Express.js Logic</div>
+                            <div class="card-body bg-dark">
+                                <pre class="m-0 p-0 border-0"><code class="language-javascript">
+app.use((req, res, next) => {
+  console.log('Request...');
+  next();
+});
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 text-center text-muted">
+                        <i class="fas fa-arrow-right fa-2x d-none d-md-block"></i>
+                        <i class="fas fa-arrow-down fa-2x d-md-none"></i>
+                    </div>
+
+                    <!-- NestJS -->
+                    <div class="col-md-5">
+                        <div class="card h-100 border-secondary">
+                            <div class="card-header bg-secondary text-white small">NestJS Logic</div>
+                            <div class="card-body">
+                                <p class="small mb-1">NestJS supports <strong>both</strong> functional and class-based
+                                    middleware.</p>
+                                <span class="badge bg-secondary mb-2">NestMiddleware Interface</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Class Middleware Example -->
+                <h6 class="fw-bold text-secondary">7.1 Class-based Middleware (The Nest Way)</h6>
+                <p class="small text-muted">Why Class-based? Because you can use <strong>Dependency Injection</strong>
+                    inside them!</p>
+
+                <pre class="rounded"><code class="language-typescript">
+import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+
+@Injectable()
+export class LoggerMiddleware implements NestMiddleware {
+  constructor(private readonly loggerService: LoggerService) {} // DI works here!
+
+  use(req: Request, res: Response, next: NextFunction) {
+    this.loggerService.log(`Request to: ${req.originalUrl}`);
+    next();
+  }
+}
+                </code></pre>
+
+                <!-- Applying Middleware -->
+                <h6 class="fw-bold text-secondary mt-4">7.2 Applying Middleware (The Consumer)</h6>
+                <p class="small text-muted">Unlike decorators used for Guards or Interceptors, Middleware is configured
+                    in the <strong>Module's <code>configure()</code> method</strong>.</p>
+
+                <div class="diagram-container m-0 p-3 mb-3">
+                    <div class="mermaid">
+                        graph LR
+                        Req[HTTP Request] --> Global[Global Middleware]
+                        Global --> Module[Module Middleware]
+                        Module --> Route[Route Handler]
+
+                        style Global fill:#e0e0e0,stroke:#333
+                        style Module fill:#b3e5fc,stroke:#0288d1
+                        style Route fill:#c8e6c9,stroke:#388e3c
+                    </div>
+                </div>
+
+                <pre class="rounded"><code class="language-typescript">
+// app.module.ts
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggerMiddleware)
+      .exclude(
+        { path: 'cats', method: RequestMethod.GET }, // Exclude specific routes
+        'cats/(.*)',
+      )
+      .forRoutes('cats'); // Apply to all routes in CatsController
+  }
+}
+                </code></pre>
+
+                <!-- Functional Middleware -->
+                <div class="concept-box cb-gray mt-4">
+                    <h6 class="fw-bold text-dark">Functional Middleware</h6>
+                    <p class="small text-muted mb-2">If your middleware doesn't need dependencies, you can just use a
+                        simple function, exactly like Express.</p>
+                    <pre class="m-0 border p-2 rounded"><code class="language-typescript">export function logger(req, res, next) {
+  console.log(`Request...`);
+  next();
+};</code></pre>
+                </div>
+
+                <!-- Global Middleware Warning -->
+                <div class="alert alert-warning d-flex align-items-center mt-3" role="alert">
+                    <i class="fas fa-exclamation-triangle me-3 fa-lg"></i>
+                    <div>
+                        <strong>Global Middleware Note:</strong> Unlike other global components, Global Middleware
+                        defined in <code>main.ts</code> via <code>app.use()</code> <strong>cannot</strong> inject
+                        dependencies. If you need DI, bind it in the Root Module instead.
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 8. Pipes -->
+        <section id="pipes" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-check-double me-2 text-danger"></i>8. Validation & Pipes
+                    <span class="migration-badge">Express: Joi / Express-Validator</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Intro -->
+                <p class="text-muted">
+                    A <strong>Pipe</strong> is a class annotated with <code>@Injectable()</code>. Pipes operate on the
+                    <strong>arguments</strong> being processed by a controller route handler. They have two typical use
+                    cases:
+                </p>
+                <div class="row g-2 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light border-start border-4 border-primary">
+                            <strong class="text-primary">1. Transformation</strong><br>
+                            Transform input data to the desired form (e.g., from string <code>"1"</code> to integer
+                            <code>1</code>).
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light border-start border-4 border-danger">
+                            <strong class="text-danger">2. Validation</strong><br>
+                            Evaluate input data and if valid, pass it through unchanged; otherwise, throw an exception.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workflow Diagram -->
+                <h6 class="fw-bold text-secondary">8.1 Where do Pipes sit?</h6>
+                <p class="small text-muted">Pipes run <em>inside</em> the exception zone. If a Pipe throws an error
+                    (e.g., Validation Error), the controller method is <strong>never executed</strong>.</p>
+
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph LR
+                        Req[HTTP Request] --> Guard[Guards]
+                        Guard --> Pipe{Pipes}
+
+                        Pipe -->|Valid / Transformed| Ctrl[Controller Handler]
+                        Pipe --x|Invalid Data| Ex[Exception Filter]
+                        Ex -->|400 Bad Request| Res[Response]
+
+                        style Pipe fill:#ffcdd2,stroke:#d32f2f
+                        style Ctrl fill:#c8e6c9,stroke:#388e3c
+                        style Ex fill:#ffecb3,stroke:#ffb300
+                    </div>
+                </div>
+
+                <!-- Built-in Pipes -->
+                <h6 class="fw-bold text-secondary mt-4">8.2 Transformation (Built-in Pipes)</h6>
+                <p class="small text-muted">
+                    In Express, you often do <code>const id = parseInt(req.params.id)</code> inside your route. In
+                    NestJS, you declare it.
+                </p>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush small">
+                            <li class="list-group-item"><code>ParseIntPipe</code></li>
+                            <li class="list-group-item"><code>ParseBoolPipe</code></li>
+                            <li class="list-group-item"><code>ParseUUIDPipe</code></li>
+                            <li class="list-group-item"><code>DefaultValuePipe</code></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <pre class="m-0 rounded"><code class="language-typescript">
+@Get(':id')
+// Auto-converts "123" string to number
+// Throws 400 if ID is "abc"
+findOne(@Param('id', ParseIntPipe) id: number) {
+  return this.usersService.findOne(id);
+}
+                        </code></pre>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Schema Validation -->
+                <h6 class="fw-bold text-danger">8.3 Schema Validation (The "Killer Feature")</h6>
+                <p class="small">
+                    Express often uses libraries like <strong>Joi</strong> or <strong>Zod</strong> with middleware.
+                    NestJS leverages <strong>class-validator</strong> and <strong>class-transformer</strong> to validate
+                    data based on the DTO class definition.
+                </p>
+
+                <!-- Comparison -->
+                <div class="row g-3">
+                    <!-- Step 1: The DTO -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-secondary">
+                            <div class="card-header bg-secondary text-white small">Step 1: Define DTO</div>
+                            <div class="card-body p-0">
+                                <pre class="m-0 border-0"><code class="language-typescript">
+// create-user.dto.ts
+import { IsString, IsInt, IsEmail } from 'class-validator';
+
+export class CreateUserDto {
+  @IsString()
+  name: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsInt()
+  @Min(18)
+  age: number;
+}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: The Controller -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-danger">
+                            <div class="card-header bg-danger text-white small">Step 2: Use in Controller</div>
+                            <div class="card-body p-0">
+                                <pre class="m-0 border-0"><code class="language-typescript">
+// user.controller.ts
+@Post()
+// The ValidationPipe reads the decorators
+// in the DTO and validates the body automatically.
+@UsePipes(new ValidationPipe())
+create(@Body() createUserDto: CreateUserDto) {
+  return 'User is valid!';
+}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Pipes Concept -->
+                <div class="concept-box cb-red mt-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-globe fa-2x text-danger me-3"></i>
+                        <div>
+                            <h6 class="fw-bold text-dark m-0">Global Validation</h6>
+                            <p class="small text-muted m-0">
+                                Instead of adding <code>@UsePipes</code> to every controller, you can set it up once in
+                                <code>main.ts</code>.
+                            </p>
+                            <code
+                                class="small text-danger">app.useGlobalPipes(new ValidationPipe({ whitelist: true }));</code>
+                            <br>
+                            <small class="text-muted"><em>(Whitelist: true automatically strips properties that are not
+                                    in the DTO. Security win!)</em></small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 9. Guards -->
+        <section id="guards" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-shield-alt me-2 text-primary"></i>9. Guards (Authentication & Authorization)
+                    <span class="migration-badge">Express: Middleware (Passport)</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Introduction -->
+                <p class="text-muted">
+                    In Express, authentication is often handled by middleware (e.g.,
+                    <code>passport.authenticate()</code>). The problem is that middleware is "dumb"—it doesn't know
+                    <em>which</em> route handler is about to be executed.
+                </p>
+                <div class="alert alert-light border-start border-4 border-primary">
+                    <strong>The NestJS Guard Advantage:</strong> Guards have access to the <code>ExecutionContext</code>
+                    instance, so they know exactly what's going to be executed next. They return a <code>boolean</code>
+                    indicating whether the request is allowed.
+                </div>
+
+                <!-- Logic Flow Diagram -->
+                <h6 class="fw-bold text-secondary mt-4">9.1 The Authorization Flow</h6>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph LR
+                        Req[Request] --> MW[Middleware]
+                        MW --> Guard{Guard}
+
+                        Guard -- "True (Allowed)" --> Inter[Interceptor]
+                        Inter --> Pipe[Pipe]
+                        Pipe --> Ctrl[Controller]
+
+                        Guard -- "False (Denied)" --> Err[403 Forbidden]
+
+                        style Guard fill:#bbdefb,stroke:#1976d2
+                        style Err fill:#ffcdd2,stroke:#d32f2f
+                    </div>
+                </div>
+
+                <!-- Comparison: Express Middleware vs Nest Guard -->
+                <h6 class="fw-bold text-secondary mt-4">9.2 Authorization Strategy Comparison</h6>
+                <div class="row g-3">
+                    <!-- Express -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 bg-light">
+                            <div class="card-header bg-dark text-white small">Express (Middleware)</div>
+                            <div class="card-body p-0">
+                                <pre class="m-0 border-0"><code class="language-javascript">
+// checkRole.js
+module.exports = (role) => {
+  return (req, res, next) => {
+    if (req.user.role !== role) {
+       return res.status(403).send();
+    }
+    next();
+  }
+}
+
+// routes.js
+app.get('/admin',
+  authMiddleware,
+  checkRole('admin'), // Manual wiring
+  adminController
+);
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NestJS -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-primary">
+                            <div class="card-header bg-primary text-white small">NestJS (Guard + Metadata)</div>
+                            <div class="card-body p-0">
+                                <pre class="m-0 border-0"><code class="language-typescript">
+// admin.controller.ts
+@Get()
+@UseGuards(RolesGuard)
+@Roles('admin') // Custom Decorator
+findAll() {
+  return [];
+}
+
+// roles.guard.ts
+canActivate(context: ExecutionContext): boolean {
+  const roles = this.reflector.get('roles', context.getHandler());
+  // Logic to check user roles against metadata
+  return true;
+}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 9.3 Passport Integration -->
+                <h6 class="fw-bold text-secondary mt-4">9.3 Passport.js Integration</h6>
+                <p class="small text-muted">
+                    NestJS wraps Passport strategies into Guards, making migration seamless. You still define strategies
+                    (JWT, Local), but you apply them declaratively.
+                </p>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded text-center h-100 bg-white shadow-sm">
+                            <i class="fas fa-key fa-2x text-warning mb-2"></i>
+                            <h6 class="fw-bold">AuthGuard('jwt')</h6>
+                            <small class="text-muted">Standard guard provided by <code>@nestjs/passport</code>. Just
+                                drop it on a controller.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded text-center h-100 bg-white shadow-sm">
+                            <i class="fas fa-file-code fa-2x text-info mb-2"></i>
+                            <h6 class="fw-bold">Strategy Class</h6>
+                            <small class="text-muted">Instead of <code>passport.use()</code> in app.js, you create a
+                                class extending <code>PassportStrategy</code>.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded text-center h-100 bg-white shadow-sm">
+                            <i class="fas fa-user-tag fa-2x text-success mb-2"></i>
+                            <h6 class="fw-bold">User Object</h6>
+                            <small class="text-muted">Like Express, successful validation attaches the <code>user</code>
+                                object to the <code>request</code>.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metadata Concept -->
+                <div class="concept-box cb-blue mt-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-tags fa-2x text-primary me-3"></i>
+                        <div>
+                            <h6 class="fw-bold text-dark m-0">Reflector & Metadata</h6>
+                            <p class="small text-muted m-0">
+                                This is the superpower of NestJS Guards. You can attach custom metadata (like Roles,
+                                Permissions, or "IsPublic") to routes using decorators, and the Guard can read that
+                                metadata to make decisions dynamically.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 10. Interceptors -->
+        <section id="interceptors" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold"><i class="fas fa-random me-2 text-warning"></i>10. Interceptors (AOP & Response
+                    Mapping)</h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Introduction -->
+                <p class="text-muted">
+                    Interceptors allow you to wrap the request/response stream. They can execute logic
+                    <strong>before</strong> the route handler runs and transform the result <strong>after</strong> the
+                    handler returns.
+                </p>
+
+                <div class="alert alert-light border-start border-4 border-warning">
+                    <strong>Express Limitation:</strong> In Express, middleware executes sequentially. To modify a
+                    response <em>after</em> the route handler sends it, you often have to monkey-patch
+                    <code>res.send</code>.
+                    <br>
+                    <strong>NestJS Solution:</strong> Interceptors use <strong>RxJS Observables</strong> to tap into the
+                    response stream cleanly.
+                </div>
+
+                <!-- The Sandwich Flow Diagram -->
+                <h6 class="fw-bold text-secondary mt-4">10.1 The "Sandwich" Flow</h6>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        sequenceDiagram
+                        participant C as Client
+                        participant I as Interceptor
+                        participant H as Route Handler
+
+                        C->>I: 1. Incoming Request
+                        Note over I: Pre-Controller Logic<br>(e.g., Start Timer)
+                        I->>H: 2. handle()
+                        Note over H: Business Logic
+                        H-->>I: 3. Returns Data (Observable)
+                        Note over I: Post-Controller Logic<br>(e.g., Transform JSON / End Timer)
+                        I-->>C: 4. Final Response
+                    </div>
+                </div>
+
+                <!-- Code Example: Transform Interceptor -->
+                <h6 class="fw-bold text-secondary mt-4">10.2 Example: Standardizing Responses</h6>
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="card h-100 bg-light border-0">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-dark">The Goal</h6>
+                                <p class="small">
+                                    The controller returns <code>User[]</code>. <br>
+                                    The client receives <code>{ data: User[] }</code>.
+                                </p>
+                                <hr>
+                                <h6 class="fw-bold text-dark">RxJS Magic</h6>
+                                <p class="small mb-0">
+                                    We use the <code>.pipe()</code> method to manipulate the stream of data returning
+                                    from the handler.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <pre class="m-0 rounded"><code class="language-typescript">
+import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
+import { map } from 'rxjs/operators';
+
+@Injectable()
+export class TransformInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler) {
+    // 1. Pre-controller logic here (optional)
+
+    // 2. Handle request and transform response
+    return next.handle().pipe(
+      map(data => ({
+        data: data,
+        timestamp: new Date().toISOString()
+      }))
+    );
+  }
+}
+                        </code></pre>
+                    </div>
+                </div>
+
+                <!-- Common Use Cases Grid -->
+                <h6 class="fw-bold text-secondary mt-4">10.3 Common Use Cases</h6>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="p-3 border rounded text-center h-100 shadow-sm">
+                            <i class="fas fa-stopwatch fa-2x text-warning mb-2"></i><br>
+                            <strong>Logging</strong><br>
+                            <small class="text-muted">Calculate request duration.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 border rounded text-center h-100 shadow-sm">
+                            <i class="fas fa-file-code fa-2x text-info mb-2"></i><br>
+                            <strong>Serialization</strong><br>
+                            <small class="text-muted">Exclude passwords from response.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 border rounded text-center h-100 shadow-sm">
+                            <i class="fas fa-history fa-2x text-success mb-2"></i><br>
+                            <strong>Caching</strong><br>
+                            <small class="text-muted">Return cached data instead of calling handler.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 border rounded text-center h-100 shadow-sm">
+                            <i class="fas fa-hourglass-end fa-2x text-danger mb-2"></i><br>
+                            <strong>Timeouts</strong><br>
+                            <small class="text-muted">Cancel request if too long.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exception Filters Note -->
+                <div class="concept-box cb-red mt-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-circle fa-2x text-danger me-3"></i>
+                        <div>
+                            <h6 class="fw-bold text-dark m-0">Bonus: Exception Filters</h6>
+                            <p class="small text-muted m-0">
+                                While Interceptors handle the <em>Happy Path</em> (Success), <strong>Exception
+                                    Filters</strong> handle the <em>Sad Path</em> (Errors). They catch thrown exceptions
+                                and format the error JSON sent to the client.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 11. Database -->
+        <section id="database" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold"><i class="fas fa-database me-2 text-info"></i>11. Database Integration</h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Introduction -->
+                <p class="text-muted">
+                    NestJS is database agnostic. It integrates easily with SQL (Postgres, MySQL) and NoSQL (MongoDB)
+                    databases. The two most popular ORMs in the ecosystem are <strong>TypeORM</strong> and
+                    <strong>Prisma</strong>.
+                </p>
+
+                <!-- Comparison Cards -->
+                <div class="row g-4 mb-4">
+                    <!-- TypeORM -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-primary">
+                            <div class="card-header bg-primary text-white text-center fw-bold">TypeORM</div>
+                            <div class="card-body">
+                                <ul class="small mb-0 list-group list-group-flush">
+                                    <li class="list-group-item"><i
+                                            class="fas fa-check text-success me-2"></i><strong>Mature:</strong> Long
+                                        history, widely used.</li>
+                                    <li class="list-group-item"><i
+                                            class="fas fa-check text-success me-2"></i><strong>Pattern:</strong> Active
+                                        Record & Data Mapper.</li>
+                                    <li class="list-group-item"><i
+                                            class="fas fa-code text-primary me-2"></i><strong>Decorators:</strong> Uses
+                                        TS decorators heavily.</li>
+                                    <li class="list-group-item"><code>@Entity(), @Column()</code></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Prisma -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-dark">
+                            <div class="card-header bg-dark text-white text-center fw-bold">Prisma</div>
+                            <div class="card-body">
+                                <ul class="small mb-0 list-group list-group-flush">
+                                    <li class="list-group-item"><i
+                                            class="fas fa-check text-success me-2"></i><strong>Modern:</strong> Next-gen
+                                        ORM.</li>
+                                    <li class="list-group-item"><i
+                                            class="fas fa-check text-success me-2"></i><strong>Type-Safety:</strong>
+                                        Auto-generated types from schema.</li>
+                                    <li class="list-group-item"><i
+                                            class="fas fa-file-code text-dark me-2"></i><strong>Schema:</strong> Uses
+                                        <code>schema.prisma</code> file.</li>
+                                    <li class="list-group-item">No decorators, pure JS/TS objects.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TypeORM Setup -->
+                <h6 class="fw-bold text-secondary">11.1 Setting up TypeORM (The "Official" Way)</h6>
+                <p class="small text-muted">NestJS provides a dedicated <code>@nestjs/typeorm</code> package.</p>
+
+                <div class="row g-0 border rounded overflow-hidden mb-4">
+                    <div class="col-md-12 bg-white p-3">
+                        <pre class="m-0 border-0" style="font-size: 0.75rem;"><code class="language-typescript">
+// app.module.ts
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './users/user.entity';
+
+@Module({
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      username: 'db_user',
+      password: 'db_password',
+      database: 'test_db',
+      entities: [User], // Register entities here
+      synchronize: true, // Only for dev!
+    }),
+    UsersModule,
+  ],
+})
+export class AppModule {}
+                        </code></pre>
+                    </div>
+                </div>
+
+                <!-- Repository Pattern Diagram -->
+                <h6 class="fw-bold text-secondary mt-4">11.2 The Repository Pattern</h6>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph LR
+                        Ctrl[Controller] -->|Calls| Srv[Service]
+                        Srv -->|Uses| Rep[Repository]
+                        Rep -->|Queries| DB[(Database)]
+
+                        style Rep fill:#bbdefb,stroke:#1976d2
+                        style Srv fill:#fff9c4,stroke:#fbc02d
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-white">
+                            <h6 class="small fw-bold text-primary">Injecting Repositories</h6>
+                            <pre class="m-0 p-0 border-0"><code class="language-typescript">
+constructor(
+  @InjectRepository(User)
+  private usersRepository: Repository<User>,
+) {}
+                            </code></pre>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-white">
+                            <h6 class="small fw-bold text-success">Using Repositories</h6>
+                            <pre class="m-0 p-0 border-0"><code class="language-typescript">
+findAll(): Promise<User[]> {
+  return this.usersRepository.find();
+}
+                            </code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Async Configuration -->
+                <div class="concept-box cb-blue mt-4">
+                    <h6 class="fw-bold text-primary mb-2">Configuration Best Practice</h6>
+                    <p class="small text-muted mb-0">
+                        Hardcoding credentials in <code>app.module.ts</code> is bad. Use <strong>ConfigService</strong>
+                        (Environmental Variables) with <code>TypeOrmModule.forRootAsync()</code> to load database
+                        secrets securely at runtime.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 12. Configuration -->
+        <section id="config" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold"><i class="fas fa-sliders-h me-2 text-secondary"></i>12. Configuration (Env
+                    Variables)</h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Intro -->
+                <p class="text-muted">
+                    Hardcoding database passwords or API keys is a major security risk. NestJS provides a dedicated
+                    <strong>ConfigModule</strong> (based on <code>dotenv</code>) to manage environment variables in a
+                    type-safe and structured way.
+                </p>
+                <div class="alert alert-light border-start border-4 border-secondary">
+                    <strong>Express Approach:</strong> Manually requiring <code>dotenv</code> at the top of
+                    <code>index.js</code> and accessing <code>process.env</code> directly throughout the codebase.<br>
+                    <strong>NestJS Approach:</strong> Injecting a <strong>ConfigService</strong> to access variables,
+                    enabling mocking for tests and runtime validation.
+                </div>
+
+                <!-- Installation -->
+                <div class="card bg-dark text-white border-0 shadow-sm mb-4">
+                    <div class="card-body font-monospace p-3">
+                        <span class="text-success">$</span> npm i --save @nestjs/config
+                    </div>
+                </div>
+
+                <!-- Setup Flow Diagram -->
+                <h6 class="fw-bold text-secondary">12.1 The Configuration Flow</h6>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph LR
+                        Env[.env File] -->|Loads| Mod[ConfigModule]
+                        Mod -->|Validates| Joi{Joi Schema}
+                        Joi --x|Fail| Error[Startup Error]
+                        Joi -->|Success| Srv[ConfigService]
+                        Srv -->|Injects| App[App Components]
+
+                        style Env fill:#fff9c4,stroke:#fbc02d
+                        style Srv fill:#bbdefb,stroke:#2196f3
+                        style Error fill:#ffcdd2,stroke:#c62828
+                    </div>
+                </div>
+
+                <!-- Implementation Guide -->
+                <h6 class="fw-bold text-secondary mt-4">12.2 Implementation Steps</h6>
+
+                <div class="row g-3">
+                    <!-- Step 1: Setup -->
+                    <div class="col-md-12">
+                        <div class="card h-100 border-secondary">
+                            <div class="card-header bg-secondary text-white small">1. Setup in AppModule</div>
+                            <div class="card-body p-0">
+                                <pre class="m-0 border-0"><code class="language-typescript">
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // Makes ConfigModule available everywhere
+      envFilePath: '.env.development',
+    }),
+  ],
+})
+export class AppModule {}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Usage -->
+                    <div class="col-md-12">
+                        <div class="card h-100 border-primary">
+                            <div class="card-header bg-primary text-white small">2. Usage in Service</div>
+                            <div class="card-body p-0">
+                                <pre class="m-0 border-0"><code class="language-typescript">
+import { ConfigService } from '@nestjs/config';
+
+@Injectable()
+export class AppService {
+  constructor(private configService: ConfigService) {}
+
+  getDatabaseHost() {
+    // Type-safe getter usually returns string | undefined
+    // You can use Generics to specify return type
+    return this.configService.get<string>('DATABASE_HOST');
+  }
+}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Validation Section -->
+                <div class="concept-box cb-red mt-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle fa-2x text-danger me-3"></i>
+                        <h6 class="fw-bold text-dark m-0">Schema Validation (Joi)</h6>
+                    </div>
+                    <p class="small text-muted">
+                        Avoid runtime errors by ensuring required variables exist <strong>before</strong> the app
+                        starts. NestJS integrates with <code>joi</code> to validate the <code>.env</code> file on
+                        startup.
+                    </p>
+                    <pre class="rounded border"><code class="language-typescript">
+// npm i joi
+import * as Joi from 'joi';
+
+ConfigModule.forRoot({
+  validationSchema: Joi.object({
+    NODE_ENV: Joi.string()
+      .valid('development', 'production')
+      .default('development'),
+    PORT: Joi.number().default(3000),
+    DATABASE_URL: Joi.string().required(), // App fails if missing
+  }),
+})
+                    </code></pre>
+                </div>
+
+                <!-- Pro Tip -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="p-3 border rounded bg-light">
+                            <h6 class="small fw-bold text-primary"><i class="fas fa-lightbulb me-2"></i>Why use
+                                ConfigService instead of process.env?</h6>
+                            <ul class="small text-muted mb-0 ps-3">
+                                <li><strong>Mocking:</strong> In unit tests, you can easily mock
+                                    <code>ConfigService</code> to return fake values. You cannot easily mock the global
+                                    <code>process.env</code>.</li>
+                                <li><strong>Type Safety:</strong> Generics allow you to specify what type of data you
+                                    expect.</li>
+                                <li><strong>Centralization:</strong> You can define custom getters or computed
+                                    configuration logic in one place.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 13. Testing -->
+        <section id="testing" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold"><i class="fas fa-vial me-2 text-success"></i>13. Testing (Jest & Supertest)</h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Intro -->
+                <p class="text-muted">
+                    In the Express ecosystem, setting up a test harness (Jest/Mocha, Chai, Sinon, Supertest) takes time
+                    and configuration. In <strong>NestJS</strong>, Jest is pre-configured out of the box. Every time you
+                    generate a component via CLI, a corresponding <code>.spec.ts</code> file is created.
+                </p>
+
+                <!-- Comparison Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-dark">Unit Testing</h6>
+                                <p class="small mb-0">Testing individual classes (Services, Controllers) in isolation by
+                                    <strong>mocking</strong> their dependencies.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-dark">E2E Testing</h6>
+                                <p class="small mb-0">Testing the entire application flow (HTTP Request -> Controller ->
+                                    Service -> DB) using <strong>Supertest</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- The Testing Module Diagram -->
+                <h6 class="fw-bold text-secondary">13.1 The Testing Module Architecture</h6>
+                <p class="small text-muted">NestJS provides the <code>Test</code> class to create an isolated module
+                    environment, mimicking the behavior of the main application runtime but allowing you to swap real
+                    providers with mocks.</p>
+
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph TD
+                        subgraph Test_Environment [Test Environment]
+                        TR[Test Runner - Jest]
+                        TM[Test.createTestingModule]
+
+                        subgraph Mocked_Module [Mocked Module]
+                        Ctrl[UsersController]
+                        MockSrv[Mock UsersService]
+                        end
+                        end
+
+                        Real[Real UsersService]
+
+                        TR --> TM
+                        TM --> Ctrl
+                        TM --x|Ignores| Real
+                        TM --> MockSrv
+
+                        style MockSrv fill:#a5d6a7,stroke:#2e7d32
+                        style Real fill:#ef9a9a,stroke:#c62828,stroke-dasharray: 5 5
+                    </div>
+                </div>
+
+                <!-- Unit Testing Example -->
+                <h6 class="fw-bold text-secondary mt-4">13.2 Unit Testing Example</h6>
+                <p class="small">Notice how we compile a module and override the provider.</p>
+
+                <div class="row g-0 border rounded overflow-hidden mb-4">
+                    <div class="col-md-12 bg-white p-3">
+                        <pre class="m-0 border-0"><code class="language-typescript">
+import { Test, TestingModule } from '@nestjs/testing';
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
+
+describe('UsersController', () => {
+  let controller: UsersController;
+  let service: UsersService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [UsersController],
+      providers: [
+        {
+          provide: UsersService,
+          // MOCKING THE SERVICE
+          useValue: {
+            findAll: jest.fn().mockResolvedValue(['User1', 'User2']),
+          },
+        },
+      ],
+    }).compile();
+
+    controller = module.get<UsersController>(UsersController);
+    service = module.get<UsersService>(UsersService);
+  });
+
+  it('should return an array of users', async () => {
+    expect(await controller.findAll()).toEqual(['User1', 'User2']);
+    expect(service.findAll).toHaveBeenCalled();
+  });
+});
+                        </code></pre>
+                    </div>
+                </div>
+
+                <!-- E2E Testing -->
+                <div class="concept-box cb-blue">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-network-wired fa-2x text-primary me-3"></i>
+                        <h6 class="fw-bold text-dark m-0">End-to-End (E2E) Testing</h6>
+                    </div>
+                    <p class="small text-muted">
+                        E2E tests are located in the <code>/test</code> directory. They spin up the NestJS application
+                        instance and hit the endpoints using HTTP.
+                    </p>
+                    <pre class="m-0 border p-2 rounded"><code class="language-typescript">
+// app.e2e-spec.ts
+request(app.getHttpServer())
+  .get('/users')
+  .expect(200)
+  .expect({
+    data: ['User1', 'User2']
+  });
+                    </code></pre>
+                </div>
+
+                <!-- Key Benefits -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="alert alert-success d-flex align-items-center mb-0">
+                            <i class="fas fa-check-circle fa-lg me-3"></i>
+                            <div>
+                                <strong>Why this is better than Express:</strong> In Express, dependency injection is
+                                manual. If your controller imports a database model directly, you cannot unit test the
+                                controller without hitting the database. In NestJS, DI makes mocking trivial.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 14. Microservices -->
+        <section id="microservices" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold"><i class="fas fa-network-wired me-2 text-dark"></i>14. Microservices (Scaling
+                    Out)</h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Intro -->
+                <p class="text-muted">
+                    Express.js is often used for microservices, but communication between services usually requires
+                    manual HTTP requests (Axios/Fetch) or setting up message brokers from scratch. <strong>NestJS
+                        supports Microservices natively</strong> via the <code>@nestjs/microservices</code> package,
+                    abstracting the transport layer entirely.
+                </p>
+
+                <!-- Monolith vs Microservice Diagram -->
+                <h6 class="fw-bold text-secondary">14.1 Architecture Shift</h6>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph LR
+                        subgraph Monolith
+                        C1[Client] --> API[API Gateway / App]
+                        API --> Logic
+                        API --> DB[(Database)]
+                        end
+
+                        subgraph Microservices
+                        C2[Client] --> Gate[API Gateway]
+                        Gate -.->|TCP/Redis| Auth[Auth Service]
+                        Gate -.->|RabbitMQ| Order[Order Service]
+                        Gate -.->|gRPC| Pay[Payment Service]
+
+                        Auth --> DB1[(Auth DB)]
+                        Order --> DB2[(Order DB)]
+                        end
+
+                        style Gate fill:#E0234E,color:white,stroke:#333
+                        style Auth fill:#ffecb3,stroke:#ffb300
+                        style Order fill:#b3e5fc,stroke:#03a9f4
+                        style Pay fill:#c8e6c9,stroke:#4caf50
+                    </div>
+                </div>
+
+                <!-- Transport Layers -->
+                <h6 class="fw-bold text-secondary mt-4">14.2 Supported Transporters</h6>
+                <p class="small text-muted">You can switch the transport strategy by changing <strong>one line of
+                        configuration</strong>.</p>
+
+                <div class="row g-2 mb-4">
+                    <div class="col-md-3">
+                        <div class="p-2 border rounded bg-light text-center small fw-bold">TCP (Default)</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2 border rounded bg-light text-center small fw-bold">Redis (Pub/Sub)</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2 border rounded bg-light text-center small fw-bold">RabbitMQ</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2 border rounded bg-light text-center small fw-bold">Kafka</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2 border rounded bg-light text-center small fw-bold">gRPC</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2 border rounded bg-light text-center small fw-bold">MQTT</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2 border rounded bg-light text-center small fw-bold">NATS</div>
+                    </div>
+                </div>
+
+                <!-- Pattern Comparison -->
+                <div class="row g-0 border rounded overflow-hidden mb-4">
+                    <!-- Request-Response -->
+                    <div class="col-md-6 border-end p-3">
+                        <h6 class="text-primary fw-bold small"><i class="fas fa-exchange-alt me-2"></i>Request-Response
+                        </h6>
+                        <p class="small text-muted">Ideal for when you need an answer (e.g., Auth check).</p>
+                        <pre class="m-0 border-0"><code class="language-typescript">
+// Gateway (Client)
+this.client.send({ cmd: 'get_user' }, id);
+
+// Microservice (Server)
+@MessagePattern({ cmd: 'get_user' })
+getUser(id: number) {
+  return this.users.find(id);
+}
+                        </code></pre>
+                    </div>
+
+                    <!-- Event-Based -->
+                    <div class="col-md-6 bg-white p-3">
+                        <h6 class="text-warning fw-bold small"><i class="fas fa-bullhorn me-2"></i>Event-Based</h6>
+                        <p class="small text-muted">Fire and forget (e.g., Sending email after order).</p>
+                        <pre class="m-0 border-0"><code class="language-typescript">
+// Gateway (Client)
+this.client.emit('order_created', order);
+
+// Microservice (Server)
+@EventPattern('order_created')
+handleOrderCreated(order: Order) {
+  this.emailService.sendReceipt(order);
+}
+                        </code></pre>
+                    </div>
+                </div>
+
+                <!-- Client Proxy -->
+                <div class="concept-box cb-red mt-3">
+                    <h6 class="fw-bold text-dark">ClientProxy & Injection</h6>
+                    <p class="small text-muted mb-0">
+                        In NestJS, a microservice client is just another <strong>Provider</strong>. You configure it in
+                        your module and inject it into your controller using <code>@Inject('SERVICE_NAME')</code>. This
+                        makes testing easy because you can mock the microservice client!
+                    </p>
+                </div>
+
+                <!-- Hybrid Application -->
+                <div class="alert alert-info mt-3 d-flex align-items-center">
+                    <i class="fas fa-info-circle fa-2x me-3"></i>
+                    <div>
+                        <strong>Hybrid Apps:</strong> A NestJS app can be both an HTTP server (handling REST/GraphQL)
+                        <em>and</em> a Microservice (listening for events) at the same time. This is perfect for
+                        Monolith-to-Microservice migration strategies.
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+
+    <!-- Mermaid & Toggle Logic -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: false });
+
+        window.toggleContent = async function (header) {
+            const body = header.nextElementSibling;
+            const icon = header.querySelector('.fa-chevron-down, .fa-chevron-up');
+
+            if (body.style.display === "block") {
+                body.style.display = "none";
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                body.style.display = "block";
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+
+                // Initialize Mermaid inside this block if present
+                const diagrams = body.querySelectorAll('.mermaid');
+                if (diagrams.length > 0) {
+                    await mermaid.run({ nodes: diagrams });
+                }
+            }
+        }
+
+        window.toggleSidebar = function () {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+    </script>
+</body>
+
+</html>
