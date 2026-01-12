@@ -246,6 +246,8 @@
             <a href="#queues" class="nav-link">16. Queues (Bull/Redis)</a>
             <a href="#decorators" class="nav-link">17. Custom Decorators</a>
             <a href="#versioning" class="nav-link">18. API Versioning</a>
+            <a href="#structure" class="nav-link">19. Project Structure</a>
+            <a href="#websockets" class="nav-link">20. Real-Time (WebSockets)</a>
         </div>
     </nav>
 
@@ -1478,6 +1480,78 @@ create(@Body() createUserDto: CreateUserDto) {
                     </div>
                 </div>
 
+                <hr class="my-4">
+
+                <!-- Custom Pipes -->
+                <h6 class="fw-bold text-danger">8.4 Creating Custom Pipes</h6>
+                <p class="small text-muted">
+                    Sometimes built-in pipes aren't enough. You can create a custom pipe to perform specific validation
+                    logic (e.g., verifying an ID format) or transformation (e.g., parsing a CSV string into an array).
+                </p>
+
+                <!-- The Code -->
+                <div class="row g-0 border rounded overflow-hidden mb-3">
+                    <div class="col-md-12 bg-white p-3">
+                        <h6 class="small fw-bold text-dark mb-2">Example: Validation Pipe for ObjectId (MongoDB)</h6>
+                        <pre class="m-0 border-0"><code class="language-typescript">
+import { PipeTransform, Injectable, ArgumentMetadata, BadRequestException } from '@nestjs/common';
+import { ObjectId } from 'mongodb';
+
+@Injectable()
+export class ValidateObjectIdPipe implements PipeTransform<string, string> {
+  transform(value: string, metadata: ArgumentMetadata): string {
+    // 1. Check if the value is valid
+    if (!ObjectId.isValid(value)) {
+      throw new BadRequestException('Invalid ObjectId');
+    }
+    
+    // 2. Return the value (Transformation is optional)
+    return value;
+  }
+}
+                        </code></pre>
+                    </div>
+                </div>
+
+                <!-- Applying Pipes -->
+                <h6 class="fw-bold text-secondary mt-3">8.5 Applying Custom Pipes</h6>
+                <p class="small text-muted">You use the <code>@UsePipes()</code> decorator or pass the class directly
+                    into <code>@Body()</code> or <code>@Param()</code>.</p>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-danger">
+                            <div class="card-header bg-danger text-white small">Parameter Scoped (Best Practice)</div>
+                            <div class="card-body p-2">
+                                <p class="small mb-1">Validates only this specific argument.</p>
+                                <pre class="m-0 border-0 p-2 rounded"><code class="language-typescript">
+@Get(':id')
+findOne(
+  @Param('id', ValidateObjectIdPipe) id: string
+) {
+  return this.service.findOne(id);
+}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-secondary">
+                            <div class="card-header bg-secondary text-white small">Method Scoped</div>
+                            <div class="card-body p-2">
+                                <p class="small mb-1">Validates all arguments for this method.</p>
+                                <pre class="m-0 border-0 p-2 rounded"><code class="language-typescript">
+@Post()
+@UsePipes(ValidateObjectIdPipe) // Applies to Body & Params
+create(@Body() dto: CreateDto) {
+  // ...
+}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </section>
 
@@ -1748,6 +1822,70 @@ export class TransformInterceptor implements NestInterceptor {
                             <strong>Timeouts</strong><br>
                             <small class="text-muted">Cancel request if too long.</small>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Applying Interceptors -->
+                <h6 class="fw-bold text-secondary mt-4">10.4 How to Apply Interceptors</h6>
+                <p class="small text-muted">You can bind interceptors at three different levels depending on your scope.
+                </p>
+
+                <div class="row g-3 mb-4">
+                    <!-- Method Scope -->
+                    <div class="col-md-4">
+                        <div class="card h-100 border-primary">
+                            <div class="card-header bg-primary text-white small">1. Method Scope</div>
+                            <div class="card-body p-2">
+                                <p class="small mb-2">Apply to a single route handler.</p>
+                                <pre class="m-0 border-0 p-1"><code class="language-typescript">
+@Get()
+@UseInterceptors(LoggingInterceptor)
+findAll() {}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Controller Scope -->
+                    <div class="col-md-4">
+                        <div class="card h-100 border-success">
+                            <div class="card-header bg-success text-white small">2. Controller Scope</div>
+                            <div class="card-body p-2">
+                                <p class="small mb-2">Apply to every route in a controller.</p>
+                                <pre class="m-0 border-0 p-1"><code class="language-typescript">
+@Controller('cats')
+@UseInterceptors(LoggingInterceptor)
+export class CatsController {}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Global Scope -->
+                    <div class="col-md-4">
+                        <div class="card h-100 border-warning">
+                            <div class="card-header bg-warning text-dark small">3. Global Scope</div>
+                            <div class="card-body p-2">
+                                <p class="small mb-2">Apply to the entire application.</p>
+                                <pre class="m-0 border-0 p-1"><code class="language-typescript">
+// main.ts
+app.useGlobalInterceptors(
+  new LoggingInterceptor()
+);
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Injection Note -->
+                <div class="alert alert-secondary d-flex align-items-center p-2 small">
+                    <i class="fas fa-info-circle me-3"></i>
+                    <div>
+                        <strong>DI in Global Interceptors:</strong> If you use <code>app.useGlobalInterceptors()</code>
+                        in <code>main.ts</code>, you cannot inject dependencies into the interceptor. To fix this,
+                        register it as a provider in <code>app.module.ts</code> using the <code>APP_INTERCEPTOR</code>
+                        token.
                     </div>
                 </div>
 
@@ -2973,6 +3111,310 @@ export class UsersControllerV2 {
                     </p>
                     <pre
                         class="m-0 mt-2 border p-2 rounded"><code class="language-typescript">@Controller({ version: VERSION_NEUTRAL })</code></pre>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 19. Project Structure -->
+        <section id="structure" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-folder-tree me-2 text-warning"></i>19. Project Structure (Enterprise Grade)
+                    <span class="migration-badge">Express: Flexible/Unopinionated</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <p class="text-muted">
+                    While Express allows you to put files anywhere, NestJS encourages a <strong>Modular</strong>
+                    structure. For enterprise apps, we separate <strong>Features</strong> (Business Logic) from
+                    <strong>Core</strong> (System Configuration) and <strong>Shared</strong> (Reusable Utils).
+                </p>
+
+                <div class="row g-4">
+
+                    <!-- Visual Tree Structure -->
+                    <div class="col-lg-6">
+                        <div class="card h-100 shadow-sm border-0">
+                            <div class="card-header bg-dark text-white small fw-bold">
+                                <i class="fas fa-project-diagram me-2"></i>Directory Map
+                            </div>
+                            <div class="card-body p-3 font-monospace"
+                                style="background-color: #2b2b2b; color: #dcdcdc; font-size: 0.85rem;">
+                                <!-- Root -->
+                                <div class="mb-1"><i class="fas fa-folder-open text-warning me-2"></i>src/</div>
+
+                                <!-- Main Files -->
+                                <div class="ms-3 mb-1"><i class="fab fa-js text-primary me-2"></i>main.ts <span
+                                        class="text-muted ms-2">// Entry point</span></div>
+                                <div class="ms-3 mb-1"><i class="fas fa-cube text-danger me-2"></i>app.module.ts <span
+                                        class="text-muted ms-2">// Root Module</span></div>
+
+                                <!-- Common Folder -->
+                                <div class="ms-3 mt-2"><i class="fas fa-folder text-warning me-2"></i>common/ <span
+                                        class="text-secondary ms-2">// Global Utils</span></div>
+                                <div class="ms-4"><i class="fas fa-folder text-warning me-2"></i>decorators/</div>
+                                <div class="ms-4"><i class="fas fa-folder text-warning me-2"></i>filters/</div>
+                                <div class="ms-4"><i class="fas fa-folder text-warning me-2"></i>guards/</div>
+                                <div class="ms-4"><i class="fas fa-folder text-warning me-2"></i>middleware/</div>
+
+                                <!-- Config Folder -->
+                                <div class="ms-3 mt-2"><i class="fas fa-folder text-warning me-2"></i>config/ <span
+                                        class="text-secondary ms-2">// Env Validations</span></div>
+
+                                <!-- Features (Users) -->
+                                <div class="ms-3 mt-2"><i class="fas fa-folder text-info me-2"></i>modules/ <span
+                                        class="text-secondary ms-2">// Feature Modules</span></div>
+
+                                <!-- User Module Detail -->
+                                <div class="ms-4"><i class="fas fa-folder-open text-info me-2"></i>users/</div>
+                                <div class="ms-5"><i class="fas fa-folder text-success me-2"></i>dto/ <span
+                                        class="text-secondary ms-2">// Validation Classes</span></div>
+                                <div class="ms-5"><i class="fas fa-folder text-success me-2"></i>entities/ <span
+                                        class="text-secondary ms-2">// DB Models</span></div>
+                                <div class="ms-5"><i class="fas fa-route text-primary me-2"></i>users.controller.ts
+                                </div>
+                                <div class="ms-5"><i class="fas fa-cogs text-warning me-2"></i>users.service.ts</div>
+                                <div class="ms-5"><i class="fas fa-cube text-danger me-2"></i>users.module.ts</div>
+                                <div class="ms-5"><i class="fas fa-vial text-success me-2"></i>users.spec.ts</div>
+
+                                <!-- Auth Module -->
+                                <div class="ms-4 mt-1"><i class="fas fa-folder text-info me-2"></i>auth/</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Explanations -->
+                    <div class="col-lg-6">
+                        <div class="accordion" id="structureAccordion">
+
+                            <!-- 1. Modules Directory -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button fw-bold text-info" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#dir-modules">
+                                        <i class="fas fa-cubes me-2"></i> src/modules/
+                                    </button>
+                                </h2>
+                                <div id="dir-modules" class="accordion-collapse collapse show"
+                                    data-bs-parent="#structureAccordion">
+                                    <div class="accordion-body small">
+                                        This is where your business logic lives. Each feature (Users, Orders, Auth) gets
+                                        its own folder containing:
+                                        <ul>
+                                            <li><strong>Module:</strong> The glue file.</li>
+                                            <li><strong>Controller:</strong> Routes.</li>
+                                            <li><strong>Service:</strong> Business logic.</li>
+                                            <li><strong>DTOs:</strong> Input validation schemas.</li>
+                                            <li><strong>Entities:</strong> Database table definitions.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Common Directory -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-bold text-success" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#dir-common">
+                                        <i class="fas fa-toolbox me-2"></i> src/common/
+                                    </button>
+                                </h2>
+                                <div id="dir-common" class="accordion-collapse collapse"
+                                    data-bs-parent="#structureAccordion">
+                                    <div class="accordion-body small">
+                                        Contains logic that is <strong>reusable across the entire application</strong>,
+                                        not specific to one feature.
+                                        <ul>
+                                            <li><strong>Decorators:</strong> <code>@User()</code>,
+                                                <code>@Roles()</code>.
+                                            </li>
+                                            <li><strong>Guards:</strong> API Key checks, JWT logic.</li>
+                                            <li><strong>Interceptors:</strong> Response formatting.</li>
+                                            <li><strong>Filters:</strong> Global error handling.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Config Directory -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-bold text-dark" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#dir-config">
+                                        <i class="fas fa-sliders-h me-2"></i> src/config/
+                                    </button>
+                                </h2>
+                                <div id="dir-config" class="accordion-collapse collapse"
+                                    data-bs-parent="#structureAccordion">
+                                    <div class="accordion-body small">
+                                        Centralized configuration setup.
+                                        <ul>
+                                            <li>Database configurations (TypeORM/Prisma options).</li>
+                                            <li>Environment variable validation schemas (Joi).</li>
+                                            <li>Third-party API keys setup.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pro Tip: Barrel Files -->
+                <div class="concept-box cb-blue mt-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-file-archive fa-2x text-primary me-3"></i>
+                        <div>
+                            <h6 class="fw-bold text-dark m-0">Pro Tip: Barrel Files (index.ts)</h6>
+                            <p class="small text-muted m-0">
+                                Create an <code>index.ts</code> in your folders to export everything. This cleans up
+                                your imports significantly.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row g-0 border rounded mt-2">
+                        <div class="col-6 bg-light p-2 border-end">
+                            <small class="text-danger fw-bold">Messy Import</small><br>
+                            <code
+                                class="small text-muted">import { User } from '../modules/users/entities/user.entity';</code>
+                        </div>
+                        <div class="col-6 bg-white p-2">
+                            <small class="text-success fw-bold">Clean Import</small><br>
+                            <code class="small text-dark">import { User } from '@modules/users';</code>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 20. WebSockets -->
+        <section id="websockets" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-satellite-dish me-2 text-danger"></i>20. Real-Time Communication (WebSockets)
+                    <span class="migration-badge">Express: io.on('connection')</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <p class="text-muted">
+                    In Express, you typically attach <code>socket.io</code> to your HTTP server instance and write huge
+                    callback chains inside <code>io.on('connection')</code>. In <strong>NestJS</strong>, we use
+                    <strong>Gateways</strong>. These look exactly like Controllers, but for WebSocket events.
+                </p>
+
+                <!-- Architecture Diagram -->
+                <h6 class="fw-bold text-secondary">20.1 Gateway Architecture</h6>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph LR
+                        Client((Client)) <-->|WS Connection| Gateway[Events Gateway]
+
+                            subgraph NestJS_App
+                            Gateway -->|@SubscribeMessage| Handler[Event Handler]
+                            Handler -->|Injects| Srv[Auth Service]
+                            Handler -->|Returns| Client
+                            end
+
+                            style Gateway fill:#ffcdd2,stroke:#b71c1c
+                            style Handler fill:#e1bee7,stroke:#4a148c
+                    </div>
+                </div>
+
+                <!-- Comparison -->
+                <h6 class="fw-bold text-secondary mt-4">20.2 The Implementation Shift</h6>
+                <div class="row g-0 border rounded overflow-hidden mb-4">
+
+                    <!-- Express Code -->
+                    <div class="col-md-6 border-end bg-light p-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fab fa-node-js fa-lg me-2 text-muted"></i>
+                            <h6 class="fw-bold m-0 small">Express (Callback Hell)</h6>
+                        </div>
+                        <pre class="m-0 border-0"><code class="language-javascript">
+const io = require('socket.io')(server);
+
+io.on('connection', (socket) => {
+  console.log('User connected');
+
+  socket.on('chat_message', (msg) => {
+    // Logic inside the callback
+    // Hard to inject database services here
+    io.emit('chat_message', msg);
+  });
+});
+                        </code></pre>
+                    </div>
+
+                    <!-- NestJS Code -->
+                    <div class="col-md-6 bg-white p-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-satellite-dish fa-lg me-2 text-danger"></i>
+                            <h6 class="fw-bold m-0 small text-danger">NestJS (Declarative)</h6>
+                        </div>
+                        <pre class="m-0 border-0"><code class="language-typescript">
+@WebSocketGateway({ cors: true })
+export class ChatGateway {
+  
+  @WebSocketServer()
+  server: Server;
+
+  @SubscribeMessage('chat_message')
+  handleMessage(@MessageBody() data: string): void {
+    // Logic is separated
+    // Easy to inject services via Constructor
+    this.server.emit('chat_message', data);
+  }
+}
+                        </code></pre>
+                    </div>
+                </div>
+
+                <!-- Decorator Cheat Sheet -->
+                <h6 class="fw-bold text-secondary">20.3 WebSocket Decorators</h6>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded text-center h-100 shadow-sm">
+                            <code class="text-danger fw-bold">@WebSocketGateway()</code>
+                            <p class="small text-muted mt-2 mb-0">Marks a class as a Gateway (Controller for Sockets).
+                                Handles Port and CORS.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded text-center h-100 shadow-sm">
+                            <code class="text-primary fw-bold">@SubscribeMessage()</code>
+                            <p class="small text-muted mt-2 mb-0">Listens for a specific event name (e.g., 'join_room').
+                                Replaces <code>socket.on()</code>.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded text-center h-100 shadow-sm">
+                            <code class="text-success fw-bold">@MessageBody()</code>
+                            <p class="small text-muted mt-2 mb-0">Extracts the payload sent by the client. Clean and
+                                type-safe.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adapters Concept -->
+                <div class="concept-box cb-red mt-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-plug fa-2x text-danger me-3"></i>
+                        <div>
+                            <h6 class="fw-bold text-dark m-0">The Adapter Pattern</h6>
+                            <p class="small text-muted m-0">
+                                NestJS is platform-agnostic. By default, it uses <strong>Socket.io</strong>, but you can
+                                switch to <strong>Ws</strong> (native WebSockets) just by changing the adapter in
+                                <code>main.ts</code>, without rewriting your gateway logic.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
             </div>
