@@ -234,12 +234,18 @@
             <a href="#pipes" class="nav-link">8. Validation & Pipes</a>
             <a href="#guards" class="nav-link">9. Guards & Auth</a>
             <a href="#interceptors" class="nav-link">10. Interceptors</a>
+            <a href="#errors" class="nav-link">10.5 Error Handling</a>
+            <a href="#responses" class="nav-link">10.6 Consistent API Responses</a>
 
             <div class="nav-group-label">Phase 4: Advanced</div>
             <a href="#database" class="nav-link">11. Database (TypeORM/Prisma)</a>
             <a href="#config" class="nav-link">12. Configuration</a>
             <a href="#testing" class="nav-link">13. Testing</a>
             <a href="#microservices" class="nav-link">14. Microservices</a>
+            <a href="#swagger" class="nav-link">15. API Documentation (Swagger)</a>
+            <a href="#queues" class="nav-link">16. Queues (Bull/Redis)</a>
+            <a href="#decorators" class="nav-link">17. Custom Decorators</a>
+            <a href="#versioning" class="nav-link">18. API Versioning</a>
         </div>
     </nav>
 
@@ -249,37 +255,35 @@
         <!-- Introduction -->
         <div class="alert alert-light border-start border-4 border-danger mb-5 shadow-sm">
             <div class="row align-items-center">
-            <div class="col-md-9">
-                <h1 class="display-6 fw-bold text-dark">Learning Path: NestJS for Express Developers</h1>
-                <p class="lead text-muted">A structured guide to transitioning from the freedom of Express.js to the
-                opinionated, scalable architecture of NestJS.</p>
-                <hr class="my-3">
-                <div class="row g-3 small text-muted">
-                <div class="col-md-6">
-                    <i class="fas fa-calendar-alt text-danger me-2"></i>
-                    <strong>Last Updated:</strong> <span id="lastUpdated">Loading...</span>
+                <div class="col-md-9">
+                    <h1 class="display-6 fw-bold text-dark">Learning Path: NestJS for Express Developers</h1>
+                    <p class="lead text-muted">A structured guide to transitioning from the freedom of Express.js to the
+                        opinionated, scalable architecture of NestJS.</p>
+                    <hr class="my-3">
+                    <div class="row g-3 small text-muted">
+                        <div class="col-md-6">
+                            <i class="fas fa-calendar-alt text-danger me-2"></i>
+                            <strong>Last Updated:</strong> <span id="lastUpdated">Loading...</span>
+                        </div>
+                        <div class="col-md-6">
+                            <i class="fas fa-building text-danger me-2"></i>
+                            <strong>Organization:</strong> Techversant Infotech
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <i class="fas fa-building text-danger me-2"></i>
-                    <strong>Organization:</strong> Techversant Infotech
+                <div class="col-md-3 text-center">
+                    <img src="https://techversantinfotech.com/wp-content/uploads/2025/09/Techv-logo-011-scaled.png"
+                        alt="Techversant Infotech Logo" class="img-fluid rounded shadow-sm" style="max-width: 150px;">
                 </div>
-                </div>
-            </div>
-            <div class="col-md-3 text-center">
-                <img src="https://techversantinfotech.com/wp-content/uploads/2025/09/Techv-logo-011-scaled.png" 
-                 alt="Techversant Infotech Logo" 
-                 class="img-fluid rounded shadow-sm" 
-                 style="max-width: 150px;">
-            </div>
             </div>
         </div>
 
         <script>
             // Set last updated date
             document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
             });
         </script>
 
@@ -491,7 +495,8 @@
                         <div class="concept-box cb-red h-100">
                             <h6 class="fw-bold text-danger"><i class="fas fa-box me-2"></i>1. Modules</h6>
                             <p class="small text-muted">The organizational unit. Every application has at least one
-                                <strong>Root Module</strong>. It groups related controllers and providers together.</p>
+                                <strong>Root Module</strong>. It groups related controllers and providers together.
+                            </p>
                             <span class="badge bg-danger">@Module()</span>
                         </div>
                     </div>
@@ -1130,7 +1135,8 @@ export class UserController {
                                 <h6 class="text-danger fw-bold">4. exports</h6>
                                 <p class="small mb-0">The subset of providers that are provided by this module and
                                     should be available in other modules which import this module.
-                                    <strong>(Encapsulation)</strong>.</p>
+                                    <strong>(Encapsulation)</strong>.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -1763,6 +1769,299 @@ export class TransformInterceptor implements NestInterceptor {
             </div>
         </section>
 
+        <!-- 10.5 Error Handling -->
+        <section id="errors" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-exclamation-triangle me-2 text-danger"></i>10.5 Error Handling (Exception Filters)
+                    <span class="migration-badge">Express: (err, req, res, next)</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Introduction -->
+                <p class="text-muted">
+                    In Express, you handle errors by passing them to <code>next(err)</code> and having a special
+                    middleware at the end of your app. In NestJS, you simply <strong>throw</strong> an exception. The
+                    framework catches it using an <strong>Exception Filter</strong> and formats the response
+                    automatically.
+                </p>
+
+                <!-- Comparison -->
+                <div class="row g-3 mb-4">
+                    <!-- Express -->
+                    <div class="col-md-6">
+                        <div class="card h-100 bg-light border-0">
+                            <div class="card-header bg-dark text-white small">Express (Centralized Middleware)</div>
+                            <div class="card-body p-0">
+                                <pre class="m-0 border-0"><code class="language-javascript">
+// In Controller
+if (!user) return next(new Error('Not Found'));
+
+// In app.js (Order matters!)
+app.use((err, req, res, next) => {
+  res.status(500).json({ error: err.message });
+});
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NestJS -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-danger">
+                            <div class="card-header bg-danger text-white small">NestJS (Built-in Classes)</div>
+                            <div class="card-body p-0">
+                                <pre class="m-0 border-0"><code class="language-typescript">
+// In Controller / Service
+if (!user) {
+  // Nest auto-converts this to JSON 404
+  throw new NotFoundException('User not found');
+}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exception Flow Diagram -->
+                <h6 class="fw-bold text-secondary">The Exception Flow</h6>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        sequenceDiagram
+                        participant C as Client
+                        participant Con as Controller
+                        participant F as Exception Filter
+
+                        C->>Con: HTTP Request
+                        Note over Con: Logic Fails
+                        Con--xCon: Throw new HttpException()
+                        Note right of Con: Processing Stops
+                        Con->>F: Catch Exception
+                        F-->>C: Formatted JSON Response
+                    </div>
+                </div>
+
+                <!-- Built-in Exceptions -->
+                <h6 class="fw-bold text-secondary mt-4">Built-in HTTP Exceptions</h6>
+                <p class="small text-muted">NestJS provides classes for standard HTTP errors so you don't have to
+                    memorize status codes.</p>
+                <div class="row g-2 mb-4">
+                    <div class="col-md-4">
+                        <div class="p-2 border rounded bg-light small"><code>BadRequestException</code> (400)</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2 border rounded bg-light small"><code>UnauthorizedException</code> (401)</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2 border rounded bg-light small"><code>ForbiddenException</code> (403)</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2 border rounded bg-light small"><code>NotFoundException</code> (404)</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2 border rounded bg-light small"><code>ConflictException</code> (409)</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2 border rounded bg-light small"><code>InternalServerErrorException</code> (500)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Filter Example -->
+                <div class="concept-box cb-red">
+                    <h6 class="fw-bold text-danger mb-2">Custom Exception Filters</h6>
+                    <p class="small text-muted">
+                        Want to override the default JSON error structure? Create a filter using the
+                        <code>@Catch()</code> decorator. This allows you to log the error and send a custom response
+                        format.
+                    </p>
+                    <pre class="m-0 border p-2 rounded"><code class="language-typescript">
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from '@nestjs/common';
+import { Response } from 'express';
+
+@Catch(HttpException)
+export class HttpErrorFilter implements ExceptionFilter {
+  catch(exception: HttpException, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const status = exception.getStatus();
+
+    response
+      .status(status)
+      .json({
+        statusCode: status,
+        timestamp: new Date().toISOString(),
+        message: exception.message,
+      });
+  }
+}
+                    </code></pre>
+                    <div class="mt-2 text-end">
+                        <span class="badge bg-secondary">Usage: @UseFilters(new HttpErrorFilter())</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 10.6 Consistent Responses -->
+        <section id="responses" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-envelope-open-text me-2 text-info"></i>10.6 Consistent API Responses (The Envelope
+                    Pattern)
+                    <span class="migration-badge">Express: Helper Functions</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Intro -->
+                <p class="text-muted">
+                    In Express, developers often create utility functions like <code>sendSuccess(res, data)</code> or
+                    <code>sendError(res, msg)</code> to ensure JSON consistency. In NestJS, we use
+                    <strong>Aspect-Oriented Programming (AOP)</strong> to automatically wrap every single return value
+                    and exception into a standard "Envelope" format.
+                </p>
+
+                <!-- The Goal Visualization -->
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-5">
+                        <div class="card bg-dark text-white border-0 shadow-sm">
+                            <div class="card-header border-secondary p-2 small fw-bold text-center">
+                                Standard Envelope Schema
+                            </div>
+                            <div class="card-body font-monospace p-3 small">
+                                <pre class="m-0 text-white bg-transparent border-0 p-0">{
+  <span class="text-info">"success"</span>: <span class="text-warning">true</span> | <span class="text-danger">false</span>,
+  <span class="text-info">"statusCode"</span>: 200,
+  <span class="text-info">"message"</span>: "Operation successful",
+  <span class="text-info">"data"</span>: { ...payload... },
+  <span class="text-info">"timestamp"</span>: "2023-10-27T..."
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="diagram-container m-0 p-2">
+                            <div class="mermaid">
+                                graph LR
+                                Handler[Controller Return] -->|Raw Data| I[Interceptor]
+                                I -->|"Wraps {success:true}"| Client
+
+                                Error[Exception Thrown] -->|Raw Error| F[Filter]
+                                F -->|"Wraps {success:false}"| Client
+
+                                style I fill:#c8e6c9,stroke:#2e7d32
+                                style F fill:#ffcdd2,stroke:#c62828
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Implementation Strategy -->
+                <h6 class="fw-bold text-secondary">The Two-Pronged Approach</h6>
+
+                <div class="row g-3">
+
+                    <!-- 1. The Success Path -->
+                    <div class="col-md-12">
+                        <div class="concept-box cb-blue">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check-circle fa-2x text-primary me-3"></i>
+                                <div>
+                                    <h6 class="fw-bold text-dark m-0">1. Success: The Transform Interceptor</h6>
+                                    <p class="small text-muted m-0">Automatically wraps any data returned from a
+                                        controller.</p>
+                                </div>
+                            </div>
+
+                            <pre class="m-0 border p-2 rounded"><code class="language-typescript">
+// transform.interceptor.ts
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { map } from 'rxjs/operators';
+
+export interface Response&lt;T&gt; {
+  success: boolean;
+  data: T;
+}
+
+@Injectable()
+export class TransformInterceptor&lt;T&gt; implements NestInterceptor&lt;T, Response&lt;T&gt;&gt; {
+  intercept(context: ExecutionContext, next: CallHandler) {
+    return next.handle().pipe(
+      map(data => ({
+        success: true,
+        statusCode: context.switchToHttp().getResponse().statusCode,
+        message: 'Operation Successful',
+        data: data
+      }))
+    );
+  }
+}
+                            </code></pre>
+                        </div>
+                    </div>
+
+                    <!-- 2. The Error Path -->
+                    <div class="col-md-12">
+                        <div class="concept-box cb-red">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-times-circle fa-2x text-danger me-3"></i>
+                                <div>
+                                    <h6 class="fw-bold text-dark m-0">2. Error: The Exception Filter</h6>
+                                    <p class="small text-muted m-0">Catches errors and formats them to match the
+                                        envelope schema.</p>
+                                </div>
+                            </div>
+
+                            <pre class="m-0 border p-2 rounded"><code class="language-typescript">
+// http-exception.filter.ts
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from '@nestjs/common';
+
+@Catch(HttpException)
+export class HttpExceptionFilter implements ExceptionFilter {
+  catch(exception: HttpException, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse();
+    const status = exception.getStatus();
+    const errorResponse = exception.getResponse();
+
+    response
+      .status(status)
+      .json({
+        success: false,
+        statusCode: status,
+        // Handle both string messages and object error responses
+        message: typeof errorResponse === 'string' ? errorResponse : (errorResponse as any).message,
+        data: null
+      });
+  }
+}
+                            </code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Application -->
+                <div class="alert alert-info mt-4 d-flex align-items-start">
+                    <i class="fas fa-plug fa-2x me-3 mt-1 flex-shrink-0"></i>
+                    <div class="w-100 overflow-hidden">
+                        <strong>Applying Globally:</strong> In <code>main.ts</code>, register both to ensure every
+                        single request adheres to the standard.
+                        <pre class="m-0 mt-2 border rounded p-2 text-dark overflow-auto"><code class="language-typescript">
+                app.useGlobalInterceptors(new TransformInterceptor());
+                app.useGlobalFilters(new HttpExceptionFilter());
+                                        </code></pre>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
         <!-- 11. Database -->
         <section id="database" class="topic-card">
             <div class="topic-header" onclick="toggleContent(this)">
@@ -1815,7 +2114,8 @@ export class TransformInterceptor implements NestInterceptor {
                                         Auto-generated types from schema.</li>
                                     <li class="list-group-item"><i
                                             class="fas fa-file-code text-dark me-2"></i><strong>Schema:</strong> Uses
-                                        <code>schema.prisma</code> file.</li>
+                                        <code>schema.prisma</code> file.
+                                    </li>
                                     <li class="list-group-item">No decorators, pure JS/TS objects.</li>
                                 </ul>
                             </div>
@@ -2038,7 +2338,8 @@ ConfigModule.forRoot({
                             <ul class="small text-muted mb-0 ps-3">
                                 <li><strong>Mocking:</strong> In unit tests, you can easily mock
                                     <code>ConfigService</code> to return fake values. You cannot easily mock the global
-                                    <code>process.env</code>.</li>
+                                    <code>process.env</code>.
+                                </li>
                                 <li><strong>Type Safety:</strong> Generics allow you to specify what type of data you
                                     expect.</li>
                                 <li><strong>Centralization:</strong> You can define custom getters or computed
@@ -2073,7 +2374,8 @@ ConfigModule.forRoot({
                             <div class="card-body">
                                 <h6 class="fw-bold text-dark">Unit Testing</h6>
                                 <p class="small mb-0">Testing individual classes (Services, Controllers) in isolation by
-                                    <strong>mocking</strong> their dependencies.</p>
+                                    <strong>mocking</strong> their dependencies.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -2327,6 +2629,350 @@ handleOrderCreated(order: Order) {
                         <em>and</em> a Microservice (listening for events) at the same time. This is perfect for
                         Monolith-to-Microservice migration strategies.
                     </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 15. Swagger -->
+        <section id="swagger" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-book me-2 text-primary"></i>15. API Documentation (Swagger)
+                    <span class="migration-badge">Express: swagger-jsdoc (Manual)</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <p class="text-muted">
+                    In Express, you often write YAML/JSON files manually or use JSDoc comments to generate API docs. In
+                    <strong>NestJS</strong>, you use decorators. The framework scans your code and generates the OpenAPI
+                    spec automatically.
+                </p>
+
+                <!-- Workflow Diagram -->
+                <h6 class="fw-bold text-secondary">15.1 The "Code First" Workflow</h6>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph LR
+                        Code[Controller & DTO] -->|Scans Decorators| Compiler
+                        Compiler -->|Generates| JSON[OpenAPI Spec]
+                        JSON -->|Renders| UI[Swagger UI Page]
+
+                        style Code fill:#e3f2fd,stroke:#2196f3
+                        style UI fill:#c8e6c9,stroke:#388e3c
+                    </div>
+                </div>
+
+                <!-- Implementation -->
+                <div class="row g-4 mt-2">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-primary">
+                            <div class="card-header bg-primary text-white small">1. The DTO</div>
+                            <div class="card-body p-0">
+                                <pre class="m-0 border-0"><code class="language-typescript">
+export class CreateCatDto {
+  @ApiProperty({ 
+    example: 'Kitty', 
+    description: 'The name of the Cat' 
+  })
+  @IsString()
+  name: string;
+
+  @ApiProperty({ example: 5 })
+  @IsInt()
+  age: number;
+}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-success">
+                            <div class="card-header bg-success text-white small">2. The Controller</div>
+                            <div class="card-body p-0">
+                                <pre class="m-0 border-0"><code class="language-typescript">
+@Post()
+@ApiOperation({ summary: 'Create cat' })
+@ApiResponse({ status: 403, description: 'Forbidden.' })
+async create(@Body() createCatDto: CreateCatDto) {
+  return 'Cat created';
+}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-4">
+                    <strong>Result:</strong> When you run the app, you get a fully interactive UI at <code>/api</code>
+                    without writing a single line of YAML.
+                </div>
+            </div>
+        </section>
+
+        <!-- 16. Queues -->
+        <section id="queues" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-layer-group me-2 text-warning"></i>16. Task Queues (Bull/Redis)
+                    <span class="migration-badge">Express: Bull (Manual Setup)</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <p class="text-muted">
+                    Offload heavy tasks (sending emails, video processing) to the background. NestJS provides the
+                    <code>@nestjs/bull</code> package, which abstracts Redis queues into <strong>Modules</strong> and
+                    <strong>Processors</strong>.
+                </p>
+
+                <!-- Architecture Diagram -->
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph LR
+                        User -->|HTTP Request| API[Controller]
+                        API -->|1. Add Job| Q[(Redis Queue)]
+
+                        subgraph Worker Service
+                        Q -->|2. Pick Job| Proc[Processor Class]
+                        Proc -->|3. Execute| Logic[Business Logic]
+                        Logic -->|4. Event| Complete[OnCompleted]
+                        end
+
+                        style Q fill:#ffcc80,stroke:#f57c00
+                        style Proc fill:#fff9c4,stroke:#fbc02d
+                    </div>
+                </div>
+
+                <!-- Code Example -->
+                <h6 class="fw-bold text-secondary mt-4">16.1 Producer vs Consumer</h6>
+                <div class="row g-0 border rounded overflow-hidden">
+                    <div class="col-md-6 border-end bg-white p-3">
+                        <h6 class="text-primary fw-bold small">Producer (Service)</h6>
+                        <pre class="m-0 border-0"><code class="language-typescript">
+constructor(
+  @InjectQueue('audio') private audioQueue: Queue
+) {}
+
+async transcode() {
+  await this.audioQueue.add('transcode', {
+    file: 'audio.mp3',
+  });
+}
+                        </code></pre>
+                    </div>
+                    <div class="col-md-6 bg-white p-3">
+                        <h6 class="text-warning fw-bold small">Consumer (Processor)</h6>
+                        <pre class="m-0 border-0"><code class="language-typescript">
+@Processor('audio')
+export class AudioProcessor {
+  
+  @Process('transcode')
+  async handleTranscode(job: Job) {
+    console.log('Processing...', job.data);
+    // Heavy logic here
+  }
+}
+                        </code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 17. Custom Decorators -->
+        <section id="decorators" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-magic me-2 text-purple"></i>17. Custom Decorators
+                    <span class="migration-badge">Express: N/A</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <p class="text-muted">
+                    Express relies heavily on the `req` object. NestJS encourages you to create your own decorators to
+                    extract data, making your controllers cleaner and platform-agnostic.
+                </p>
+
+                <!-- Comparison -->
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-5">
+                        <div class="card bg-light border-0">
+                            <div class="card-body">
+                                <h6 class="text-muted small mb-1">Express / Standard Nest</h6>
+                                <code class="text-dark">findOne(@Req() req)</code>
+                                <p class="small text-muted mt-2 mb-0">Ties you to Express. Harder to test (must mock
+                                    entire Request object).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <i class="fas fa-arrow-right text-muted"></i>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="card border-primary">
+                            <div class="card-body">
+                                <h6 class="text-primary small mb-1">Custom Decorator</h6>
+                                <code class="text-primary">findOne(@User() user)</code>
+                                <p class="small text-muted mt-2 mb-0">Clean. Explicit. Easy to test (just pass a user
+                                    object).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Implementation -->
+                <h6 class="fw-bold text-secondary">17.1 How to create one</h6>
+                <pre class="rounded"><code class="language-typescript">
+// user.decorator.ts
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+
+export const User = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest();
+    return request.user; // Extracted from JWT Guard
+  },
+);
+
+// controller.ts
+@Get()
+// Now we get the user directly!
+getProfile(@User() user: UserEntity) {
+  console.log(user); 
+}
+                </code></pre>
+            </div>
+        </section>
+
+        <!-- 18. API Versioning -->
+        <section id="versioning" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-code-branch me-2 text-info"></i>18. API Versioning
+                    <span class="migration-badge">Express: Manual Router Splits</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- Intro -->
+                <p class="text-muted">
+                    APIs evolve. In Express, you typically handle versioning by manually creating folders like
+                    <code>routes/v1/</code> and <code>routes/v2/</code> and mounting them separately.
+                    <strong>NestJS</strong> provides a built-in, global versioning mechanism that handles this routing
+                    logic via decorators.
+                </p>
+
+                <!-- Strategies Diagram -->
+                <h6 class="fw-bold text-secondary">18.1 Versioning Strategies</h6>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph TD
+                        Client[Client Request] --> Strategy{Versioning Strategy}
+
+                        Strategy -->|URI| URI["/v1/users<br>(Most Common)"]
+                        Strategy -->|Header| Header["X-API-VERSION: 1"]
+                        Strategy -->|Media Type| Media["Accept: application/vnd.v1+json"]
+
+                        URI --> Router
+                        Header --> Router
+                        Media --> Router
+
+                        Router -->|Finds| V1[V1 Controller]
+                        Router -->|Finds| V2[V2 Controller]
+
+                        style URI fill:#b3e5fc,stroke:#0288d1
+                        style Header fill:#ffecb3,stroke:#ffb300
+                        style Media fill:#e1bee7,stroke:#8e24aa
+                    </div>
+                </div>
+
+                <!-- Setup Code -->
+                <h6 class="fw-bold text-secondary mt-4">18.2 Enabling Versioning (main.ts)</h6>
+                <div class="row g-0 border rounded overflow-hidden mb-4">
+                    <div class="col-md-12 bg-white p-3">
+                        <pre class="m-0 border-0"><code class="language-typescript">
+import { VersioningType } from '@nestjs/common';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // 1. Enable Global Versioning
+  app.enableVersioning({
+    type: VersioningType.URI, // or HEADER, MEDIA_TYPE
+    defaultVersion: '1', // Optional default
+    // If using HEADER:
+    // header: 'Custom-Header',
+  });
+
+  await app.listen(3000);
+}
+                        </code></pre>
+                    </div>
+                </div>
+
+                <!-- Controller Implementation -->
+                <h6 class="fw-bold text-secondary">18.3 Usage in Controllers</h6>
+                <p class="small text-muted">You can version an entire controller or a specific route handler.</p>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-primary">
+                            <div class="card-header bg-primary text-white small">V1 Controller</div>
+                            <div class="card-body p-0">
+                                <pre class="m-0 border-0"><code class="language-typescript">
+@Controller({
+  path: 'users',
+  version: '1', // Routes to /v1/users
+})
+export class UsersControllerV1 {
+  @Get()
+  findAll() {
+    return 'This is Version 1';
+  }
+}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-success">
+                            <div class="card-header bg-success text-white small">V2 Controller (New Feature)</div>
+                            <div class="card-body p-0">
+                                <pre class="m-0 border-0"><code class="language-typescript">
+@Controller({
+  path: 'users',
+  version: '2', // Routes to /v2/users
+})
+export class UsersControllerV2 {
+  @Get()
+  findAll() {
+    return 'This is Version 2 (Improved)';
+  }
+}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Version Neutral Concept -->
+                <div class="concept-box cb-blue mt-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-infinity fa-2x text-primary me-3"></i>
+                        <h6 class="fw-bold text-dark m-0">Version Neutral</h6>
+                    </div>
+                    <p class="small text-muted mb-0">
+                        Some routes (like Health Checks) shouldn't change. You can mark them as
+                        <code>VERSION_NEUTRAL</code> to make them accessible regardless of the requested version (e.g.,
+                        just <code>/health</code>).
+                    </p>
+                    <pre
+                        class="m-0 mt-2 border p-2 rounded"><code class="language-typescript">@Controller({ version: VERSION_NEUTRAL })</code></pre>
                 </div>
 
             </div>
