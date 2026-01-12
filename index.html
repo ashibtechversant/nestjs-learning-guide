@@ -228,6 +228,7 @@
             <a href="#controllers" class="nav-link">4. Controllers & Routing</a>
             <a href="#providers" class="nav-link">5. Providers & Services</a>
             <a href="#modules" class="nav-link">6. Modules & DI</a>
+            <a href="#global-di" class="nav-link">6.5 Global Enhancers (DI Pattern)</a>
 
             <div class="nav-group-label">Phase 3: Migration Guide</div>
             <a href="#middleware" class="nav-link">7. Middleware (Express vs Nest)</a>
@@ -248,6 +249,9 @@
             <a href="#versioning" class="nav-link">18. API Versioning</a>
             <a href="#structure" class="nav-link">19. Project Structure</a>
             <a href="#websockets" class="nav-link">20. Real-Time (WebSockets)</a>
+            <a href="#upload" class="nav-link">21. File Uploading</a>
+            <a href="#lifecycle" class="nav-link">22. Lifecycle Events</a>
+            <a href="#lifecycle-summary" class="nav-link">23. Request Lifecycle</a>
         </div>
     </nav>
 
@@ -1192,6 +1196,120 @@ export class UsersModule {}
             </div>
         </section>
 
+        <!-- 6.5 Global Enhancers (DI Pattern) -->
+        <section id="global-di" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-globe me-2 text-danger"></i>6.5 Advanced: Global Enhancers via DI
+                    <span class="migration-badge">The APP_* Pattern</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <!-- The Problem Statement -->
+                <p class="text-muted">
+                    You can register globals in `main.ts`, but there is a catch: <strong>Global guards/interceptors
+                        defined in `main.ts` cannot inject dependencies</strong> because they exist outside the Module
+                    context.
+                </p>
+
+                <!-- Comparison Diagram -->
+                <h6 class="fw-bold text-secondary">The Dependency Injection Gap</h6>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph TD
+                        subgraph Main_TS [Method A: main.ts]
+                        M[app.useGlobalFilters] -->|New Instance| F1[Filter Instance]
+                        F1 -.->|Cannot Inject| S1[ConfigService]
+                        style F1 fill:#ffcdd2,stroke:#c62828
+                        end
+
+                        subgraph App_Module [Method B: Module Providers]
+                        Mod[AppModule] -->|provide: APP_FILTER| F2[Filter Instance]
+                        F2 -->|Injects| S2[ConfigService]
+                        style F2 fill:#c8e6c9,stroke:#2e7d32
+                        end
+                    </div>
+                </div>
+
+                <!-- Code Example -->
+                <h6 class="fw-bold text-secondary mt-4">The Solution: Custom Providers</h6>
+                <p class="small text-muted">To enable DI for globals, we register them directly in the
+                    <code>providers</code> array using special tokens exported by <code>@nestjs/core</code>.</p>
+
+                <div class="row g-0 border rounded overflow-hidden mb-4">
+                    <div class="col-md-12 bg-white p-3">
+                        <pre class="m-0 border-0"><code class="language-typescript">
+import { Module } from '@nestjs/common';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+
+@Module({
+  providers: [
+    AppService,
+    // 1. Global Exception Filter (With DI support)
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+    // 2. Global Interceptor A
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: BigIntInterceptor,
+    },
+    // 3. Global Interceptor B (Chained)
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor,
+    },
+  ],
+})
+export class AppModule {}
+                        </code></pre>
+                    </div>
+                </div>
+
+                <!-- Breakdown of the Syntax -->
+                <h6 class="fw-bold text-secondary">Understanding the Syntax</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="concept-box cb-blue h-100">
+                            <h6 class="fw-bold text-primary">The Token (`provide`)</h6>
+                            <p class="small mb-0">
+                                Tokens like <code>APP_INTERCEPTOR</code> tells NestJS: "Don't treat this as a normal
+                                service. Register this class as a <strong>Global Interceptor</strong> for the entire
+                                application."
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="concept-box cb-gray h-100">
+                            <h6 class="fw-bold text-dark">The Implementation (`useClass`)</h6>
+                            <p class="small mb-0">
+                                Defines which class to instantiate. Because it is inside the module, NestJS will look at
+                                the class <code>constructor</code> and inject any required dependencies (like Logger or
+                                ConfigService).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Execution Order -->
+                <div class="alert alert-warning d-flex align-items-center">
+                    <i class="fas fa-layer-group fa-2x me-3"></i>
+                    <div>
+                        <strong>Order Matters:</strong> You can provide the same token (e.g.,
+                        <code>APP_INTERCEPTOR</code>) multiple times. NestJS will execute them in the <strong>order they
+                            are defined</strong> in the array.
+                        <br>
+                        <small>In the code above: <em>BigIntInterceptor</em> runs first, then
+                            <em>TransformInterceptor</em>.</small>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
         <!-- 7. Middleware -->
         <section id="middleware" class="topic-card">
             <div class="topic-header" onclick="toggleContent(this)">
@@ -1203,121 +1321,108 @@ export class UsersModule {}
             </div>
             <div class="content-body">
 
-                <!-- Intro -->
-                <p class="text-muted mb-4">
-                    Middleware is a function which is called <strong>before</strong> the route handler. Middleware
-                    functions have access to the request and response objects, and the <code>next()</code> middleware
-                    function in the application’s request-response cycle.
+                <p class="text-muted">
+                    Middleware functions have access to the <strong>Request</strong> object, <strong>Response</strong>
+                    object, and the <strong>next()</strong> function. In NestJS, you don't use decorators to apply them;
+                    you configure them in the Module.
                 </p>
 
-                <!-- Comparison -->
-                <div class="row g-4 align-items-center mb-4">
-                    <!-- Express -->
-                    <div class="col-md-5">
-                        <div class="card h-100 border-0">
-                            <div class="card-header bg-dark text-white small">Express.js Logic</div>
-                            <div class="card-body bg-dark">
-                                <pre class="m-0 p-0 border-0"><code class="language-javascript">
-app.use((req, res, next) => {
-  console.log('Request...');
-  next();
-});
+                <!-- Step 1: Create -->
+                <h6 class="fw-bold text-secondary mt-4">7.1 Step 1: Create the Middleware</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 bg-light">
+                            <div class="card-header bg-white fw-bold small">Class-Based (Supports DI)</div>
+                            <div class="card-body p-2">
+                                <pre class="m-0 p-0"><code class="language-typescript">
+@Injectable()
+export class LoggerMiddleware implements NestMiddleware {
+  // You can inject services here!
+  constructor(private authService: AuthService) {}
+
+  use(req: Request, res: Response, next: NextFunction) {
+    console.log('Request...');
+    next();
+  }
+}
                                 </code></pre>
                             </div>
                         </div>
                     </div>
-
-                    <div class="col-md-2 text-center text-muted">
-                        <i class="fas fa-arrow-right fa-2x d-none d-md-block"></i>
-                        <i class="fas fa-arrow-down fa-2x d-md-none"></i>
-                    </div>
-
-                    <!-- NestJS -->
-                    <div class="col-md-5">
-                        <div class="card h-100 border-secondary">
-                            <div class="card-header bg-secondary text-white small">NestJS Logic</div>
-                            <div class="card-body">
-                                <p class="small mb-1">NestJS supports <strong>both</strong> functional and class-based
-                                    middleware.</p>
-                                <span class="badge bg-secondary mb-2">NestMiddleware Interface</span>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 bg-light">
+                            <div class="card-header bg-white fw-bold small">Functional (Simple)</div>
+                            <div class="card-body p-2">
+                                <pre class="m-0 p-0"><code class="language-typescript">
+// If you don't need dependencies, just use a function
+export function logger(req, res, next) {
+  console.log(`Request...`);
+  next();
+};
+                                </code></pre>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Class Middleware Example -->
-                <h6 class="fw-bold text-secondary">7.1 Class-based Middleware (The Nest Way)</h6>
-                <p class="small text-muted">Why Class-based? Because you can use <strong>Dependency Injection</strong>
-                    inside them!</p>
+                <!-- Step 2: Apply -->
+                <h6 class="fw-bold text-secondary">7.2 Step 2: Apply in Module (The Consumer)</h6>
+                <p class="small text-muted">
+                    Modules that include middleware must implement the <code>NestModule</code> interface. We use the
+                    <code>configure()</code> method to set up the pipeline.
+                </p>
 
-                <pre class="rounded"><code class="language-typescript">
-import { Injectable, NestMiddleware } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+                <div class="card border-primary mb-4">
+                    <div class="card-body p-0">
+                        <pre class="m-0 border-0"><code class="language-typescript">
+import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { CatsController } from './cats/cats.controller';
 
-@Injectable()
-export class LoggerMiddleware implements NestMiddleware {
-  constructor(private readonly loggerService: LoggerService) {} // DI works here!
-
-  use(req: Request, res: Response, next: NextFunction) {
-    this.loggerService.log(`Request to: ${req.originalUrl}`);
-    next();
-  }
-}
-                </code></pre>
-
-                <!-- Applying Middleware -->
-                <h6 class="fw-bold text-secondary mt-4">7.2 Applying Middleware (The Consumer)</h6>
-                <p class="small text-muted">Unlike decorators used for Guards or Interceptors, Middleware is configured
-                    in the <strong>Module's <code>configure()</code> method</strong>.</p>
-
-                <div class="diagram-container m-0 p-3 mb-3">
-                    <div class="mermaid">
-                        graph LR
-                        Req[HTTP Request] --> Global[Global Middleware]
-                        Global --> Module[Module Middleware]
-                        Module --> Route[Route Handler]
-
-                        style Global fill:#e0e0e0,stroke:#333
-                        style Module fill:#b3e5fc,stroke:#0288d1
-                        style Route fill:#c8e6c9,stroke:#388e3c
-                    </div>
-                </div>
-
-                <pre class="rounded"><code class="language-typescript">
-// app.module.ts
+@Module({
+  imports: [CatsModule],
+})
 export class AppModule implements NestModule {
+  
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(LoggerMiddleware)
-      .exclude(
-        { path: 'cats', method: RequestMethod.GET }, // Exclude specific routes
+      .apply(LoggerMiddleware) // 1. Select Middleware
+      .exclude(                // 2. (Optional) Exclude routes
+        { path: 'cats', method: RequestMethod.GET },
+        { path: 'cats', method: RequestMethod.POST },
         'cats/(.*)',
       )
-      .forRoutes('cats'); // Apply to all routes in CatsController
+      .forRoutes(CatsController); // 3. Apply to specific Controller
+      // .forRoutes('cats');      // OR apply to string path
+      // .forRoutes({ path: 'ab*cd', method: RequestMethod.ALL }); // OR Wildcards
   }
 }
-                </code></pre>
-
-                <!-- Functional Middleware -->
-                <div class="concept-box cb-gray mt-4">
-                    <h6 class="fw-bold text-dark">Functional Middleware</h6>
-                    <p class="small text-muted mb-2">If your middleware doesn't need dependencies, you can just use a
-                        simple function, exactly like Express.</p>
-                    <pre class="m-0 border p-2 rounded"><code class="language-typescript">export function logger(req, res, next) {
-  console.log(`Request...`);
-  next();
-};</code></pre>
-                </div>
-
-                <!-- Global Middleware Warning -->
-                <div class="alert alert-warning d-flex align-items-center mt-3" role="alert">
-                    <i class="fas fa-exclamation-triangle me-3 fa-lg"></i>
-                    <div>
-                        <strong>Global Middleware Note:</strong> Unlike other global components, Global Middleware
-                        defined in <code>main.ts</code> via <code>app.use()</code> <strong>cannot</strong> inject
-                        dependencies. If you need DI, bind it in the Root Module instead.
+                        </code></pre>
                     </div>
                 </div>
+
+                <!-- Global Middleware -->
+                <h6 class="fw-bold text-secondary">7.3 Global Middleware</h6>
+                <p class="small text-muted">If you want middleware to run on <em>every</em> route (like Helmet or CORS),
+                    you register it in <code>main.ts</code>.</p>
+
+                <div class="alert alert-warning d-flex align-items-center">
+                    <i class="fas fa-exclamation-circle me-3 fa-lg"></i>
+                    <div>
+                        <strong>Limitation:</strong> Global middleware registered in <code>main.ts</code> cannot inject
+                        dependencies. If you need DI globally, register it in <code>app.module.ts</code> instead.
+                    </div>
+                </div>
+
+                <pre class="rounded border"><code class="language-typescript">
+// main.ts
+const app = await NestFactory.create(AppModule);
+
+// Functional middleware works best here
+app.use(logger); 
+
+await app.listen(3000);
+                </code></pre>
 
             </div>
         </section>
@@ -1699,6 +1804,74 @@ canActivate(context: ExecutionContext): boolean {
                                 metadata to make decisions dynamically.
                             </p>
                         </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Global Guards -->
+                <h6 class="fw-bold text-danger">9.4 Global Guards (Application-Wide Security)</h6>
+                <p class="small text-muted">
+                    If you want to protect <strong>every</strong> route by default (e.g., require a JWT for everything
+                    except login), you use a Global Guard.
+                </p>
+
+                <div class="row g-3">
+                    <!-- Method 1: main.ts -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-secondary">
+                            <div class="card-header bg-secondary text-white small">Method 1: main.ts</div>
+                            <div class="card-body p-2">
+                                <p class="small mb-2">Simple, but <strong>cannot inject dependencies</strong>.</p>
+                                <pre class="m-0 border-0 bg-light p-2 rounded"><code class="language-typescript">
+// main.ts
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  
+  // Creates a new instance manually
+  // Fails if JwtGuard needs a Service injected!
+  app.useGlobalGuards(new JwtAuthGuard());
+  
+  await app.listen(3000);
+}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Method 2: Module Binding -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-success">
+                            <div class="card-header bg-success text-white small">Method 2: Module (Best Practice)</div>
+                            <div class="card-body p-2">
+                                <p class="small mb-2">Supports <strong>Dependency Injection</strong>.</p>
+                                <pre class="m-0 border-0 bg-light p-2 rounded"><code class="language-typescript">
+// app.module.ts
+import { APP_GUARD } from '@nestjs/core';
+
+@Module({
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard, // Nest instantiates this
+    },
+  ],
+})
+export class AppModule {}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pro Tip: Public Routes -->
+                <div class="alert alert-warning mt-3 d-flex align-items-center small">
+                    <i class="fas fa-unlock-alt fa-lg me-3"></i>
+                    <div>
+                        <strong>The Global Guard Trap:</strong> Once you enable a global guard, <em>everything</em> is
+                        locked, including your Login route. To fix this, you create a custom <code>@Public()</code>
+                        decorator and use the <strong>Reflector</strong> inside your Guard to bypass checks for specific
+                        routes.
                     </div>
                 </div>
 
@@ -3415,6 +3588,405 @@ export class ChatGateway {
                             </p>
                         </div>
                     </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 21. File Uploading -->
+        <section id="upload" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-cloud-upload-alt me-2 text-primary"></i>21. File Uploading
+                    <span class="migration-badge">Express: Multer Middleware</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <p class="text-muted">
+                    NestJS uses <code>multer</code> under the hood but exposes it via the <code>FileInterceptor</code>.
+                    This keeps your controller signatures clean using decorators to extract the file object.
+                </p>
+
+                <!-- Comparison -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100 bg-light border-0">
+                            <div class="card-header bg-dark text-white small">Express</div>
+                            <div class="card-body p-2">
+                                <pre class="m-0 border-0"><code class="language-javascript">
+const upload = multer({ dest: 'uploads/' });
+
+app.post('/upload', upload.single('file'), (req, res) => {
+  console.log(req.file); // Accessed via req
+  res.send('Uploaded');
+});
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-primary">
+                            <div class="card-header bg-primary text-white small">NestJS</div>
+                            <div class="card-body p-2">
+                                <pre class="m-0 border-0"><code class="language-typescript">
+@Post('upload')
+@UseInterceptors(FileInterceptor('file'))
+uploadFile(@UploadedFile() file: Express.Multer.File) {
+  console.log(file); // Injected directly
+}
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step-by-Step Implementation -->
+                <h6 class="fw-bold text-secondary">21.1 Handling Files & Validation</h6>
+                <div class="row g-0 border rounded overflow-hidden">
+                    <div class="col-md-12 bg-white p-3">
+                        <h6 class="small fw-bold text-dark mb-2">Advanced Example: Validation (Size & Type)</h6>
+                        <pre class="m-0 border-0"><code class="language-typescript">
+import { ParseFilePipe, MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
+
+@Post('avatar')
+@UseInterceptors(FileInterceptor('image'))
+uploadAvatar(
+  @UploadedFile(
+    new ParseFilePipe({
+      validators: [
+        new MaxFileSizeValidator({ maxSize: 1000 * 1024 }), // 1MB
+        new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }), // Regex or Mime
+      ],
+    }),
+  )
+  file: Express.Multer.File,
+) {
+  return { filename: file.filename };
+}
+                        </code></pre>
+                    </div>
+                </div>
+
+                <!-- Multiple Files -->
+                <div class="alert alert-info mt-4 d-flex align-items-center">
+                    <i class="fas fa-copy fa-lg me-3"></i>
+                    <div>
+                        <strong>Multiple Files?</strong> Use <code>FilesInterceptor('files')</code> (plural) and extract
+                        using <code>@UploadedFiles()</code> (plural).
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 22. Lifecycle Events -->
+        <section id="lifecycle" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-sync-alt me-2 text-success"></i>22. Lifecycle Events
+                    <span class="migration-badge">Express: app.listen callback</span>
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <p class="text-muted">
+                    In Express, you often put startup logic inside the <code>app.listen</code> callback. NestJS provides
+                    granular <strong>Lifecycle Hooks</strong> that allow you to run code when a module initializes, the
+                    app starts, or the app shuts down (graceful shutdown).
+                </p>
+
+                <!-- Lifecycle Diagram -->
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph LR
+                        Start((Start)) --> Init[OnModuleInit]
+                        Init --> Boot[OnApplicationBootstrap]
+                        Boot --> Run((Running))
+                        Run --> Signal[SIGTERM Received]
+                        Signal --> Destroy[OnModuleDestroy]
+                        Destroy --> Shut[OnApplicationShutdown]
+
+                        style Init fill:#c8e6c9,stroke:#2e7d32
+                        style Boot fill:#c8e6c9,stroke:#2e7d32
+                        style Destroy fill:#ffcdd2,stroke:#c62828
+                        style Shut fill:#ffcdd2,stroke:#c62828
+                    </div>
+                </div>
+
+                <!-- Implementation -->
+                <h6 class="fw-bold text-secondary mt-4">22.1 Usage in a Service</h6>
+                <p class="small text-muted">A common use case is connecting to a database or external service when the
+                    module loads.</p>
+
+                <div class="row g-0 border rounded overflow-hidden">
+                    <div class="col-md-12 bg-white p-3">
+                        <pre class="m-0 border-0"><code class="language-typescript">
+import { Injectable, OnModuleInit, OnApplicationShutdown } from '@nestjs/common';
+
+@Injectable()
+export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
+  
+  async onModuleInit() {
+    console.log('1. Database Module Initialized. Connecting...');
+    await this.connectToDb();
+  }
+
+  async onApplicationShutdown(signal: string) {
+    console.log(`2. App shutting down (Signal: ${signal}). Closing DB...`);
+    await this.closeDbConnection();
+  }
+}
+                        </code></pre>
+                    </div>
+                </div>
+
+                <!-- Enable Shutdown Hooks Note -->
+                <div class="concept-box cb-red mt-4">
+                    <h6 class="fw-bold text-danger mb-2">Crucial Step: Enable Shutdown Hooks</h6>
+                    <p class="small text-muted mb-0">
+                        Shutdown hooks are <strong>not enabled by default</strong> (to save resources). You must enable
+                        them in <code>main.ts</code> if you want to handle graceful shutdowns.
+                    </p>
+                    <pre class="m-0 mt-2 border p-2 rounded"><code class="language-typescript">
+// main.ts
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  
+  // REQUIRED for onApplicationShutdown to work
+  app.enableShutdownHooks(); 
+  
+  await app.listen(3000);
+}
+                    </code></pre>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Request Lifecycle Summary -->
+        <section id="lifecycle-summary" class="topic-card">
+            <div class="topic-header" onclick="toggleContent(this)">
+                <h5 class="m-0 fw-bold">
+                    <i class="fas fa-project-diagram me-2 text-dark"></i>Summary: The Request Lifecycle
+                </h5>
+                <i class="fas fa-chevron-down text-muted"></i>
+            </div>
+            <div class="content-body">
+
+                <p class="text-muted">
+                    Understanding the exact order of execution is crucial in NestJS. Unlike Express where everything is
+                    linear middleware, NestJS separates logic into distinct layers. This diagram illustrates the path of
+                    a request from entrance to exit.
+                </p>
+
+                <div class="alert alert-info border-start border-4 border-info">
+                    <strong>Order of Execution Rule:</strong> Middleware &rarr; Guards &rarr; Interceptors (Pre) &rarr;
+                    Pipes &rarr; Controller &rarr; Interceptors (Post) &rarr; Filters.
+                </div>
+
+                <!-- The Mermaid Diagram -->
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        flowchart LR
+                        %% --- Styles ---
+                        classDef grey fill:#6c757d,stroke:#333,color:white;
+                        classDef darkGrey fill:#343a40,stroke:#333,color:white;
+                        classDef green fill:#b2d8d8,stroke:#008080,color:black;
+                        classDef brown fill:#8d6e63,stroke:#4e342e,color:white;
+                        classDef purple fill:#e1bee7,stroke:#7b1fa2,color:black;
+                        classDef yellow fill:#ffc107,stroke:#b08d00,color:black;
+                        classDef blue fill:#bbdefb,stroke:#0d47a1,color:black;
+                        classDef white fill:#ffffff,stroke:#333,color:black;
+                        classDef labelNode fill:#f8d7da,stroke:#dc3545,color:#721c24,stroke-width:1px;
+
+                        %% --- Nodes ---
+                        Req(Request)
+
+                        %% 1. Middleware
+                        subgraph MiddlewareGroup [ ]
+                        style MiddlewareGroup fill:transparent,stroke:none
+                        GlobMid[Global]:::grey
+                        ModMid[Module]:::grey
+                        MidBox[Middleware]:::grey
+                        end
+
+                        %% 2. Guards
+                        subgraph GuardsGroup [ ]
+                        style GuardsGroup fill:transparent,stroke:none
+                        GlobGuard[Global]:::green
+                        RouteGuard[Route]:::green
+                        CtrlGuard[Controller]:::green
+                        GuardsBox[Guards]:::green
+                        end
+
+                        %% 3. Pre-Route
+                        PreRoute(Context):::white
+
+                        %% 4 & 8. Interceptors (Logical representation)
+                        subgraph IntGroup [ ]
+                        style IntGroup fill:transparent,stroke:none
+                        GlobInt[Global]:::white
+                        RouteInt[Route]:::white
+                        CtrlInt[Controller]:::white
+                        IntBox[Interceptors]:::darkGrey
+                        end
+
+                        %% 5. Pipes
+                        subgraph PipesGroup [ ]
+                        style PipesGroup fill:transparent,stroke:none
+                        GlobPipe[Global]:::brown
+                        RoutePipe[Route]:::brown
+                        CtrlPipe[Ctrl]:::brown
+                        PipesBox((Pipes)):::brown
+                        end
+
+                        %% 6. Controller
+                        subgraph ControllerGroup [Controller]
+                        style ControllerGroup fill:#e8f5e9,stroke:#333,stroke-dasharray: 5 5
+                        Handler[Route Handler]:::purple
+                        end
+
+                        %% Services
+                        Service[Services]:::yellow
+
+                        %% 7. Post-Route
+                        PostRoute(Return):::white
+
+                        %% 9. Exception Filters
+                        ExFilter{{Exception Filters}}:::blue
+
+                        Res(Response)
+
+                        %% --- Numbered Steps ---
+                        N1(1):::labelNode
+                        N2(2):::labelNode
+                        N3(3):::labelNode
+                        N4(4):::labelNode
+                        N5(5):::labelNode
+                        N6(6):::labelNode
+                        N7(7):::labelNode
+                        N8(8):::labelNode
+                        N9(9):::labelNode
+
+                        %% --- Connections ---
+
+                        %% Flow start
+                        Req --> MidBox
+                        MidBox --- N1
+                        N1 --> GuardsBox
+
+                        %% Middleware Inputs
+                        GlobMid -.-> MidBox
+                        ModMid -.-> MidBox
+
+                        %% Guards Inputs
+                        GlobGuard -.-> GuardsBox
+                        RouteGuard -.-> GuardsBox
+                        CtrlGuard -.-> GuardsBox
+
+                        GuardsBox --- N2
+                        N2 --> PreRoute
+                        PreRoute --- N3
+
+                        %% Split flow to Interceptors (Pre)
+                        N3 --> IntBox
+                        IntBox --- N4
+
+                        %% Interceptor Inputs
+                        GlobInt -.-> IntBox
+                        RouteInt -.-> IntBox
+                        CtrlInt -.-> IntBox
+
+                        %% Flow to Pipes
+                        N4 --> PipesBox
+                        PipesBox --- N5
+
+                        %% Pipes Inputs
+                        GlobPipe -.-> PipesBox
+                        RoutePipe -.-> PipesBox
+                        CtrlPipe -.-> PipesBox
+
+                        %% Flow to Handler
+                        N5 --> Handler
+                        Handler --- N6
+
+                        %% Dependency Injection
+                        Service -.-> Handler
+
+                        %% Post Handler Flow
+                        N6 --> PostRoute
+                        PostRoute --- N7
+                        N7 --> IntBox
+
+                        %% Interceptors (Post) to Filters
+                        IntBox --- N8
+                        N8 --> ExFilter
+
+                        %% Filters to Response
+                        ExFilter --- N9
+                        N9 --> Res
+                    </div>
+                </div>
+
+                <!-- Explanation Table -->
+                <h6 class="fw-bold text-secondary mt-4">Deep Dive into the Steps</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle small">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 5%">#</th>
+                                <th style="width: 20%">Layer</th>
+                                <th>Functionality</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge bg-secondary">1</span></td>
+                                <td class="fw-bold">Middleware</td>
+                                <td>Runs first. Good for logging, headers, or modifying the raw request object (like
+                                    <code>body-parser</code>).
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge bg-success">2</span></td>
+                                <td class="fw-bold">Guards</td>
+                                <td>Authentication & Authorization. Decides if the request continues or receives 403
+                                    Forbidden.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge bg-dark">3</span></td>
+                                <td class="fw-bold">Interceptors (Pre)</td>
+                                <td>Runs before the handler. Can mutate the request or start a timer.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge" style="background-color: #8d6e63;">4</span></td>
+                                <td class="fw-bold">Pipes</td>
+                                <td>Validation and Transformation of arguments (DTOs). Throws errors if validation
+                                    fails.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge" style="background-color: #e1bee7; color:black">5</span></td>
+                                <td class="fw-bold">Controller</td>
+                                <td>Your business logic executes here (calling Services).</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge bg-dark">6</span></td>
+                                <td class="fw-bold">Interceptors (Post)</td>
+                                <td>Runs after the handler returns. Used to wrap the response (e.g.,
+                                    <code>{ data: ... }</code>).
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge bg-primary">7</span></td>
+                                <td class="fw-bold">Exception Filters</td>
+                                <td>Catches any error thrown during the process and formats the final JSON error
+                                    response.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
             </div>
